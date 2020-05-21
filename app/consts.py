@@ -10,6 +10,7 @@ class CallType(str, Enum):
 
 class CallState(str, Enum):
     NEW = 'NEW'
-    CONNECTED = 'CONNECTED'
     END = 'END'
+    CONNECTED = 'CONNECTED'
+    NOT_CONNECTED = 'NOT_CONNECTED'
     MISSED = 'MISSED'
