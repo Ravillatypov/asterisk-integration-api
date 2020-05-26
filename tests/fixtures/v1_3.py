@@ -468,6 +468,13 @@ events1 = [
 ]
 events2 = [
     {
+        "Event": "VarSet",
+        "Channel": "SIP/2040404-00000727",
+        "Variable": "MIXMONITOR_FILENAME",
+        "Value": "/var/spool/asterisk/monitor/2020/05/01/in-78432041738-79172471652-20200501-130207-1588327327.4649.wav",
+        "Uniqueid": "1588327327.4649"
+    },
+    {
         "Event": "Hangup",
         "Channel": "Local/304@from-queue-00000583;2",
         "Uniqueid": "1588327351.4655",

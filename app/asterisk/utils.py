@@ -1,8 +1,12 @@
 import re
+from typing import Optional
+
+from tortoise.query_utils import Q
 
 from .data_types import CallNumbers
 from ..consts import CallType
 from .. import settings
+from ..models import Call, CallRecord
 
 re._pattern_type = re.Pattern
 
@@ -84,3 +88,11 @@ def validate_numbers(from_num: str, request_num: str) -> CallNumbers:
         get_external(request_num),
         get_internal(request_num)
     )
+
+
+async def find_call_record(call: Call) -> Optional[CallRecord]:
+    return await CallRecord.filter(
+        Q(call=call) |
+        Q(call__isnull=True, channel__call=call) |
+        Q(call__isnull=True, channel__bridged__call=call)
+    ).first()

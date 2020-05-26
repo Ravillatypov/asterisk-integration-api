@@ -166,6 +166,7 @@ async def test_call_incoming_end(manager_v1_3):
     })
     assert call.state == CallState.END
     assert call.finished_at is not None
+    assert await call.records.all().count() == 1
 
 
 async def test_call_incoming_missed(manager_v1_3):

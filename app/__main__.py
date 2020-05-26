@@ -6,6 +6,7 @@ from tortoise import Tortoise
 
 from .api import WebService
 from .asterisk import AMIService
+from .call_records import services as record_services
 from .settings import DB_URL
 
 basic_config(level=logging.INFO, buffered=False, log_format='json')
@@ -22,6 +23,12 @@ async def shutdown(*args, **kwargs):
     await Tortoise.close_connections()
 
 
+services = (
+    AMIService(),
+    WebService('0.0.0.0', 8000),
+    *record_services,
+)
+
 if __name__ == '__main__':
-    with entrypoint(AMIService(), WebService('0.0.0.0', 8000)) as loop:
+    with entrypoint(*services) as loop:
         loop.run_forever()

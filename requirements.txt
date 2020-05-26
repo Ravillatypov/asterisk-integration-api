@@ -9,3 +9,5 @@ aiomisc~=10.0.1
 aiohttp~=3.6.2
 pytest~=5.4.2
 pytest-aiohttp~=0.3.0
+ffmpeg-python~=0.2.0
+mutagen~=1.44.0

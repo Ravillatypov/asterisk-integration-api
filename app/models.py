@@ -3,7 +3,7 @@ from datetime import datetime
 from tortoise import fields
 from tortoise.models import Model
 
-from .consts import CallState, CallType
+from .consts import CallState, CallType, IntegrationState
 
 
 class TimestampModel(Model):
@@ -24,6 +24,8 @@ class Call(TimestampModel):
     finished_at: datetime = fields.DatetimeField(null=True)
     call_type: CallType = fields.CharEnumField(CallType, default=CallType.UNKNOWN)
     state: CallState = fields.CharEnumField(CallState, default=CallState.NEW)
+    integration_state: IntegrationState = fields.CharEnumField(IntegrationState, null=True)
+
     records: fields.ForeignKeyNullableRelation['CallRecord']
     channels: fields.ForeignKeyRelation['Channel']
 
