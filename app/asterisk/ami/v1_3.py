@@ -7,6 +7,7 @@ from ..cache import calls, channels
 from ..utils import validate_numbers, get_call_type, is_group_numbers, get_internal
 from ...consts import CallState, CallType
 from ...models import Channel, Call, CallRecord
+from ... import settings
 
 
 async def var_set(manager: Manager, message: Message):
@@ -91,17 +92,22 @@ async def hangup(manager: Manager, message: Message):
 
     if not call:
         return
+
     if call.state == CallState.CONNECTED:
         call.state = CallState.END
     elif call.call_type == CallType.INCOMING:
         call.state = CallState.MISSED
     else:
         call.state = CallState.NOT_CONNECTED
+
+    call.finished_at = datetime.now()
+    await call.save()
+
     calls.pop(call.id)
 
 
 async def bridge(manager: Manager, message: Message):
-    if message.get('Bridgestate', '') != 'Link':
+    if message.get('Bridgestate', '') not in ('Link', 'Unlink'):
         return
 
     b1 = channels.get(message.get('Uniqueid1', ''))
@@ -118,8 +124,9 @@ async def bridge(manager: Manager, message: Message):
     if not call:
         return
 
-    call.state = CallState.CONNECTED
-    call.voice_started_at = datetime.now()
+    if message.get('Bridgestate', '') == 'Link':
+        call.state = CallState.CONNECTED
+        call.voice_started_at = datetime.now()
 
     if call.call_type == CallType.INCOMING:
         call.request_pin = b1.pin or b2.pin or call.request_pin
@@ -140,9 +147,14 @@ async def bridge(manager: Manager, message: Message):
 
 
 async def join(manager: Manager, message: Message):
+    queue = message.get('Queue', '')
     call = calls.get(message.get('Uniqueid', ''))
+
+    if queue not in settings.GROUP_NUMBERS:
+        settings.GROUP_NUMBERS += (queue,)
+
     if call:
-        call.request_pin = message.get('Queue', '')
+        call.request_pin = queue
         if call.call_type == CallType.UNKNOWN:
             call.call_type = CallType.INCOMING
         await call.save()

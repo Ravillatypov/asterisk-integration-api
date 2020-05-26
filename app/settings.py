@@ -30,5 +30,5 @@ AMI_LOG_PATH = env.str('AMI_LOG_PATH', default='ami.log')
 
 TOKEN = env.str('TOKEN')
 NUMBERS_LENGTH = env.int('NUMBERS_LENGTH', default=3) + 1
-GROUP_NUMBERS = env.tuple('GROUP_NUMBERS', default=tuple())
 TRUNK_NUMBERS = env.tuple('TRUNK_NUMBERS', default=tuple())
+GROUP_NUMBERS = tuple()

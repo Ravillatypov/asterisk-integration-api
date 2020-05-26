@@ -2,7 +2,7 @@ import re
 
 from .data_types import CallNumbers
 from ..consts import CallType
-from ..settings import GROUP_NUMBERS, TRUNK_NUMBERS
+from .. import settings
 
 re._pattern_type = re.Pattern
 
@@ -22,7 +22,7 @@ def is_equal(num1: str, num2: str) -> bool:
 
 def is_group_numbers(*numbers: str) -> bool:
     for number in numbers:
-        if number and number in GROUP_NUMBERS:
+        if number and number in settings.GROUP_NUMBERS:
             return True
     return False
 
@@ -63,15 +63,15 @@ def get_call_type(num: CallNumbers) -> str:
     if not any((num.from_pin, num.from_number, num.request_number, num.request_pin)):
         return result
 
-    elif any((num.from_number and num.from_number in TRUNK_NUMBERS,
+    elif any((num.from_number and num.from_number in settings.TRUNK_NUMBERS,
               is_internal(num.from_pin) and is_external(num.request_number))):
         result = CallType.OUTBOUND
 
-    elif any((num.request_number and num.request_number in TRUNK_NUMBERS,
-              is_external(num.from_pin) and is_internal(num.request_pin))):
+    elif any((num.request_number and num.request_number in settings.TRUNK_NUMBERS,
+              is_external(num.from_number) and is_internal(num.request_pin))):
         result = CallType.INCOMING
 
-    elif is_internal(num.from_number) and is_internal(num.request_number):
+    elif is_internal(num.from_pin) and is_internal(num.request_pin):
         result = CallType.INTERNAL
 
     return result
