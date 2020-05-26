@@ -1,4 +1,8 @@
-from app.asterisk.utils import get_internal, get_external, validate_numbers
+import pytest
+
+from app.asterisk.data_types import CallNumbers
+from app.asterisk.utils import get_internal, get_external, validate_numbers, get_call_type
+from app.consts import CallType
 
 
 def test_get_internal():
@@ -40,3 +44,15 @@ def test_validate_numbers():
     assert num.request_pin == ''
     assert num.request_number == '72346754'
     assert bool(num) == True
+
+
+@pytest.mark.parametrize('from_pin,from_num,req_num,req_pin,call_type', [
+    ('', '', '', '', CallType.UNKNOWN),
+    ('', '546432', '9954563', '', CallType.UNKNOWN),
+    ('', '8644423', '', '439', CallType.INCOMING),
+    ('423', '', '', '439', CallType.INTERNAL),
+    ('423', '', '5456456', '', CallType.OUTBOUND),
+])
+def test_get_call_type(from_pin, from_num, req_num, req_pin, call_type):
+    num = CallNumbers(from_pin, from_num, req_num, req_pin)
+    assert get_call_type(num) == call_type
