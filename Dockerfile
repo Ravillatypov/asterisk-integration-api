@@ -15,4 +15,4 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps build-base python3-dev
 
 COPY . /code
 
-CMD ["python", "main.py"]
+CMD ["python", "-m", "app"]

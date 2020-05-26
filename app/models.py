@@ -32,6 +32,7 @@ class Channel(TimestampModel):
     id: str = fields.CharField(max_length=50, pk=True)
     name: str = fields.CharField(max_length=255, index=True)
     monitor_file_name: str = fields.CharField(max_length=255, null=True)
+    pin: str = fields.CharField(max_length=6, default='')
     from_number: str = fields.CharField(max_length=20, default='')
     request_number: str = fields.CharField(max_length=20, default='')
     bridged: fields.ManyToManyRelation['Channel'] = fields.ManyToManyField('models.Channel', related_name='bridged_set')

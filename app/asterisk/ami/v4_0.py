@@ -52,5 +52,3 @@ def register(manager: Manager):
     manager.register_event('Newchannel', new_channel)
     manager.register_event('Newstate', new_state)
     manager.register_event('VarSet', var_set)
-
-

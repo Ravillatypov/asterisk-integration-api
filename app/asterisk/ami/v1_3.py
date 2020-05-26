@@ -1,10 +1,12 @@
+from datetime import datetime
+
 from panoramisk.manager import Manager
 from panoramisk.message import Message
 
-from app.asterisk.cache import calls, channels
-from app.asterisk.utils import validate_numbers, get_call_type, is_group_numbers
-from app.consts import CallState, CallType
-from app.models import Channel, Call, CallRecord
+from ..cache import calls, channels
+from ..utils import validate_numbers, get_call_type, is_group_numbers, get_internal
+from ...consts import CallState, CallType
+from ...models import Channel, Call, CallRecord
 
 
 async def var_set(manager: Manager, message: Message):
@@ -64,6 +66,7 @@ async def new_state(manager: Manager, message: Message):
         return
 
     call.state = CallState.CONNECTED
+    call.voice_started_at = datetime.now()
 
     src_nums = (call.from_pin, call.from_number)
     dst_nums = (call.request_pin, call.request_number)
@@ -107,21 +110,57 @@ async def bridge(manager: Manager, message: Message):
     if not b1 and not b2:
         return
 
-    call: Call = b1.call or b2.call
     await b1.bridged.add(b2)
     await b2.bridged.add(b1)
 
-    num = validate_numbers(message.get('CallerID1', ''), message.get('CallerID12', ''))
-    if call and num and call.call_type == CallType.INCOMING:
-        call.request_pin = num.request_pin or call.request_pin
-        await call.save()
+    call: Call = b1.call or b2.call
+
+    if not call:
+        return
+
+    call.state = CallState.CONNECTED
+    call.voice_started_at = datetime.now()
+
+    if call.call_type == CallType.INCOMING:
+        call.request_pin = b1.pin or b2.pin or call.request_pin
+
+        for num in (
+                validate_numbers(b1.from_number, b1.request_number),
+                validate_numbers(b2.from_number, b2.request_number),
+                validate_numbers(message.get('CallerID1', ''), message.get('CallerID2', ''))
+        ):
+            if not is_group_numbers(call.request_pin):
+                break
+            elif num and num.request_pin:
+                call.request_pin = num.request_pin
+            elif num and num.from_pin:
+                call.request_pin = num.from_pin
+
+    await call.save()
 
 
 async def join(manager: Manager, message: Message):
     call = calls.get(message.get('Uniqueid', ''))
     if call:
         call.request_pin = message.get('Queue', '')
+        if call.call_type == CallType.UNKNOWN:
+            call.call_type = CallType.INCOMING
         await call.save()
+
+
+async def dial(manager: Manager, message: Message):
+    if message.get('SubEvent', '') != 'Begin':
+        return
+
+    pin = get_internal(message.get('Dialstring', ''))
+    if not pin:
+        return
+
+    id1, id2 = message.get('UniqueID', ''), message.get('DestUniqueID', '')
+    for ch in (channels.get(id1), channels.get(id2)):
+        if ch and not ch.pin:
+            ch.pin = pin
+            await ch.save()
 
 
 def register(manager: Manager):
@@ -131,7 +170,6 @@ def register(manager: Manager):
     manager.register_event('Newchannel', new_channel)
     manager.register_event('Newstate', new_state)
     manager.register_event('VarSet', var_set)
-
-    # manager.register_event('Dial', not_used)
+    manager.register_event('Dial', dial)
     # manager.register_event('Leave', not_used)
     # manager.register_event('Masquerade', not_used)

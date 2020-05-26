@@ -1,8 +1,8 @@
 import re
 
-from app.asterisk.data_types import CallNumbers
-from app.consts import CallType
-from app.settings import GROUP_NUMBERS, TRUNK_NUMBERS
+from .data_types import CallNumbers
+from ..consts import CallType
+from ..settings import GROUP_NUMBERS, TRUNK_NUMBERS
 
 re._pattern_type = re.Pattern
 
@@ -47,7 +47,7 @@ def get_internal(number: str) -> str:
 
 def get_external(number: str) -> str:
     m = None
-    if not number:
+    if number:
         m = external_regexp.match(number)
     return m.group(2) if m else ''
 
