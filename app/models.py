@@ -4,6 +4,7 @@ from tortoise import fields
 from tortoise.models import Model
 
 from .consts import CallState, CallType, IntegrationState
+from .utils import add_city_code, convert_datetime
 
 
 class TimestampModel(Model):
@@ -25,9 +26,32 @@ class Call(TimestampModel):
     call_type: CallType = fields.CharEnumField(CallType, default=CallType.UNKNOWN)
     state: CallState = fields.CharEnumField(CallState, default=CallState.NEW)
     integration_state: IntegrationState = fields.CharEnumField(IntegrationState, null=True)
+    account_id: str = fields.CharField(max_length=50, null=True)
+    record: fields.ForeignKeyNullableRelation['CallRecord'] = fields.ForeignKeyField('models.Call', null=True)
+    external_id: str = fields.CharField(max_length=70, index=True, null=True)
 
     records: fields.ForeignKeyNullableRelation['CallRecord']
     channels: fields.ForeignKeyRelation['Channel']
+
+    def event_schema(self) -> dict:
+        return {
+            'id': self.id,
+            'started_at': convert_datetime(self.created_at),
+            'voice_started_at': convert_datetime(self.voice_started_at),
+            'finished_at': convert_datetime(self.finished_at),
+            'call_type': self.call_type.value,
+            'state': self.state.value,
+            'is_record': bool(self.record_id),
+            'from_pin': self.from_pin,
+            'from_number': add_city_code(self.from_number),
+            'request_number': add_city_code(self.request_number),
+            'request_pin': self.request_pin,
+            'account_id': self.account_id,
+        }
+
+    @property
+    def is_finished(self) -> bool:
+        return self.state in (CallState.END, CallState.NOT_CONNECTED, CallState.MISSED)
 
 
 class Channel(TimestampModel):

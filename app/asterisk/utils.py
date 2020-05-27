@@ -3,9 +3,10 @@ from typing import Optional
 
 from tortoise.query_utils import Q
 
+
 from .data_types import CallNumbers
-from ..consts import CallType
 from .. import settings
+from ..consts import CallType
 from ..models import Call, CallRecord
 
 re._pattern_type = re.Pattern

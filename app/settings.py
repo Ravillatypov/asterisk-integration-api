@@ -28,13 +28,18 @@ if SENTRY_DSN:
 DB_URL = env.str('DB_URL', default='sqlite://db.sqlite3')
 AMI_LOG_PATH = env.str('AMI_LOG_PATH', default='ami.log')
 
-TOKEN = env.str('TOKEN')
+DEFAULT_CONTEXT = env.str('DEFAULT_CONTEXT', default='default')
+START_DIGIT = env.str('START_DIGIT', default='8')
 NUMBERS_LENGTH = env.int('NUMBERS_LENGTH', default=3) + 1
 TRUNK_NUMBERS = env.tuple('TRUNK_NUMBERS', default=tuple())
 GROUP_NUMBERS = tuple()
+CITY_CODES = {len(i): i for i in ('7',) + env.tuple('CITY_CODES', default=tuple())}
 
 RECORDS_PATH = env.str('RECORDS_PATH', default='/records')
 RECORDS_STORE_DAYS = env.int('RECORDS_STORE_DAYS', default=30)
 RECORDS_UPLOAD_URL = env.str('RECORDS_UPLOAD_URL', default='')
 RECORDS_UPLOAD_HEADERS = env.dict('RECORDS_UPLOAD_HEADERS', default={})
 CONVERTED_RECORDS_PATH = env.str('CONVERTED_RECORDS_PATH', default='/records')
+
+WS_URL = env.str('WS_URL', default='')
+WS_HEADERS = env.str('WS_HEADERS', default='')

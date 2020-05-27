@@ -1,14 +1,16 @@
 import logging
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from time import time
+from typing import Union
 
 import ffmpeg
 from aiohttp.client import ClientSession
 from aiomisc.io import async_open
 from mutagen.mp3 import MPEGInfo
 
-from .settings import RECORDS_PATH, CONVERTED_RECORDS_PATH, RECORDS_UPLOAD_URL, RECORDS_UPLOAD_HEADERS
+from .settings import RECORDS_PATH, CONVERTED_RECORDS_PATH, RECORDS_UPLOAD_URL, RECORDS_UPLOAD_HEADERS, CITY_CODES
 
 
 def get_full_path(file_name: str) -> str:
@@ -68,3 +70,14 @@ async def upload_record(headers: dict, file_name: str) -> bool:
     async with ClientSession(headers=headers) as ahttp:
         resp = await ahttp.put(RECORDS_UPLOAD_URL, data=data)
         return 199 < resp.status < 300
+
+
+def add_city_code(number: str) -> str:
+    ln = 11 - len(number)
+    return CITY_CODES.get(ln, '') + number
+
+
+def convert_datetime(dt: datetime) -> Union[None, str]:
+    if isinstance(dt, datetime):
+        return dt.isoformat(timespec='seconds')
+    return None
