@@ -1,4 +1,5 @@
 import asyncio
+from shutil import rmtree
 from uuid import uuid4
 
 import pytest
@@ -25,6 +26,7 @@ def loop(tmp_path):
         await Tortoise.close_connections()
 
     loop.run_until_complete(drop())
+    rmtree(tmp_path.as_posix(), True)
     loop.close()
 
 
