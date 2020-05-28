@@ -7,6 +7,7 @@ from tortoise import Tortoise
 from .api import WebService
 from .asterisk import AMIService
 from .call_records import services as record_services
+from .services import services as ws_services
 from .settings import DB_URL
 
 basic_config(level=logging.INFO, buffered=False, log_format='json')
@@ -27,6 +28,7 @@ services = (
     AMIService(),
     WebService('0.0.0.0', 8000),
     *record_services,
+    *ws_services,
 )
 
 if __name__ == '__main__':
