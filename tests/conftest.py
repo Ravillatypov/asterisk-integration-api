@@ -1,5 +1,4 @@
 import asyncio
-from os import remove
 from uuid import uuid4
 
 import pytest
@@ -10,9 +9,9 @@ from app.asterisk.ami import register
 
 
 @pytest.fixture
-def loop():
+def loop(tmp_path):
     loop = asyncio.get_event_loop_policy().new_event_loop()
-    path = f'/tmp/test_{uuid4()}.sqlite3'
+    path = tmp_path.as_posix() + f'/{uuid4()}.sqlite3'
 
     async def init():
         await Tortoise.init(modules={'models': ['app.models']}, db_url=f'sqlite://{path}')
@@ -21,9 +20,12 @@ def loop():
     loop.run_until_complete(init())
     yield loop
 
-    loop.run_until_complete(Tortoise.close_connections())
+    async def drop():
+        await Tortoise._drop_databases()
+        await Tortoise.close_connections()
+
+    loop.run_until_complete(drop())
     loop.close()
-    remove(path)
 
 
 @pytest.fixture
