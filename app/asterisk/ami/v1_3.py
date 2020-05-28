@@ -45,6 +45,7 @@ async def new_channel(manager: Manager, message: Message):
             request_number=num.request_number,
             request_pin=num.request_pin,
             call_type=get_call_type(num),
+            account_id=message.get('AccountCode'),
         )
         calls[call.id] = call
 
@@ -68,6 +69,7 @@ async def new_state(manager: Manager, message: Message):
 
     call.state = CallState.CONNECTED
     call.voice_started_at = datetime.now()
+    call.account_id = call.account_id or message.get('AccountCode')
 
     src_nums = (call.from_pin, call.from_number)
     dst_nums = (call.request_pin, call.request_number)
@@ -101,6 +103,7 @@ async def hangup(manager: Manager, message: Message):
         call.state = CallState.NOT_CONNECTED
 
     call.finished_at = datetime.now()
+    call.account_id = call.account_id or message.get('AccountCode')
     await call.save()
 
     calls.pop(call.id)
