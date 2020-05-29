@@ -16,7 +16,7 @@ class CleanupService(PeriodicService):
 
     async def callback(self):
         dt = datetime.now() - timedelta(days=RECORDS_STORE_DAYS)
-        async for record in CallRecord.filter(converted__isnull=False, created_at__lte=dt):
+        async for record in CallRecord.filter(created_at__lte=dt).exclude(converted=None):
             try:
                 p = Path(record.converted)
                 if p.exists():

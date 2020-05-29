@@ -12,10 +12,10 @@ class ConvertService(PeriodicService):
 
     async def callback(self):
         async for record in CallRecord.filter(
-                converted__isnull=True,
+                converted=None,
                 call__state=CallState.END,
                 call__integration_state__not=IntegrationState.UPLOADED,
-                call__record__isnull=True,
+                call__record=None,
         ).prefetch_related('call'):
             path = get_full_path(record.file_name)
 

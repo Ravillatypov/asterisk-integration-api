@@ -22,7 +22,7 @@ async def var_set(manager: Manager, message: Message):
 
     call = calls.get(ch.id, ch.call)
     if not call:
-        ch2 = await ch.bridged.filter(call__not_isnull=True).first()
+        ch2 = await ch.bridged.filter(call=None).first()
         call = ch2.call if ch2 else call
 
     await CallRecord.create(
@@ -119,8 +119,9 @@ async def bridge(manager: Manager, message: Message):
     if not b1 and not b2:
         return
 
-    await b1.bridged.add(b2)
-    await b2.bridged.add(b1)
+    if b1 and b2:
+        await b1.bridged.add(b2)
+        await b2.bridged.add(b1)
 
     call: Call = b1.call or b2.call
 

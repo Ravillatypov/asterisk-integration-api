@@ -94,6 +94,6 @@ def validate_numbers(from_num: str, request_num: str) -> CallNumbers:
 async def find_call_record(call: Call) -> Optional[CallRecord]:
     return await CallRecord.filter(
         Q(call=call) |
-        Q(call__isnull=True, channel__call=call) |
-        Q(call__isnull=True, channel__bridged__call=call)
+        Q(call=None, channel__call=call) |
+        Q(call=None, channel__bridged__call=call)
     ).first()

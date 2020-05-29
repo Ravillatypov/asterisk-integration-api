@@ -13,7 +13,7 @@ class FindRecordService(PeriodicService):
     async def callback(self):
         async for call in Call.filter(
                 state=CallState.END,
-                records__is_null=True,
+                record=None,
                 integration_state=IntegrationState.END
         ):
             record = await find_call_record(call)

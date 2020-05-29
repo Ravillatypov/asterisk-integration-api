@@ -8,6 +8,7 @@ from uuid import uuid4
 from aiohttp import WSMsgType
 from aiohttp.client import ClientSession
 from aiohttp.client_ws import ClientWebSocketResponse
+from aiohttp.web_ws import WebSocketResponse
 from aiomisc.service.base import Service
 from tortoise import BaseDBAsyncClient
 from tortoise.signals import post_save
@@ -19,7 +20,7 @@ from ..models import Call
 
 class WSInterface:
     ws: ClientWebSocketResponse
-    ws_clients: Set[ClientWebSocketResponse] = {}
+    ws_clients: Set[WebSocketResponse] = {}
     need_stop: bool = not bool(WS_URL)
     responses: Dict[str, Any] = {}  # result from server
     events: Queue = Queue()  # events and request to remote server
