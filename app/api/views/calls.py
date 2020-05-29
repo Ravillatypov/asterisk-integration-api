@@ -6,6 +6,19 @@ from ...services.websocket import WSInterface
 
 class CallsView(web.View):
     async def get(self):
+        """
+    ---
+    description: Get list of calls
+    tags:
+    - call
+    produces:
+    - application/json
+    responses:
+        "200":
+            description: ok
+        "405":
+            description: invalid HTTP Method
+        """
         result = {'result': []}
         async for call in Call.all().order_by('-created_at').limit(100):
             result['result'].append(call.event_schema())
