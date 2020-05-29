@@ -2,7 +2,7 @@ from os.path import isfile
 
 import sentry_sdk
 from envparse import env
-from sentry_sdk.integrations.sanic import SanicIntegration
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
 # Init settings using the .env file
 if isfile('.env'):
@@ -23,7 +23,7 @@ SECRET = env.str('SECRET')
 SENTRY_DSN = env.str('SENTRY_DSN', default='')
 RELEASE = env.str('RELEASE', default='local')
 if SENTRY_DSN:
-    sentry_sdk.init(SENTRY_DSN, release=RELEASE, integrations=(SanicIntegration(),))
+    sentry_sdk.init(SENTRY_DSN, release=RELEASE, integrations=(AioHttpIntegration(),))
 
 DB_URL = env.str('DB_URL', default='sqlite://db.sqlite3')
 AMI_LOG_PATH = env.str('AMI_LOG_PATH', default='ami.log')
@@ -35,6 +35,7 @@ TRUNK_NUMBERS = env.tuple('TRUNK_NUMBERS', default=tuple())
 GROUP_NUMBERS = tuple()
 CITY_CODES = {len(i): i for i in ('7',) + env.tuple('CITY_CODES', default=tuple())}
 
+RECORDS_IS_ENABLED = env.bool('RECORDS_IS_ENABLED', default=True)
 RECORDS_PATH = env.str('RECORDS_PATH', default='/records')
 RECORDS_STORE_DAYS = env.int('RECORDS_STORE_DAYS', default=30)
 RECORDS_UPLOAD_URL = env.str('RECORDS_UPLOAD_URL', default='')

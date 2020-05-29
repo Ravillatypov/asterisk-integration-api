@@ -1,7 +1,7 @@
 FROM python:3.8-alpine
 
 WORKDIR /code
-RUN mkdir /db
+RUN mkdir /db /records
 ENV DB_URL sqlite:///db/db.sqlite3
 ENV AMI_LOG_PATH /db/ami.log
 
