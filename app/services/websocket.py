@@ -14,8 +14,20 @@ from tortoise import BaseDBAsyncClient
 from tortoise.signals import post_save
 
 from ..asterisk.manager_utils import make_call
-from ..settings import WS_HEADERS, WS_URL
 from ..models import Call
+from ..settings import WS_HEADERS, WS_URL, EVENTS_URL, EVENTS_HEADERS
+
+
+async def post_event(event: dict):
+    if not EVENTS_URL:
+        return
+
+    try:
+        async with ClientSession(headers=EVENTS_HEADERS) as session:
+            async with session.post(EVENTS_URL, json=event) as resp:
+                logging.info(f'send event status: {resp.status}')
+    except Exception as err:
+        logging.warning(f'Error on send event (post): {err}')
 
 
 class WSInterface:
@@ -53,6 +65,7 @@ class WSInterface:
                 'type': 'event',
             })
 
+        await post_event(data)
         for ws in cls.ws_clients:
             await ws.send_json(data)
 
@@ -61,7 +74,7 @@ pre_events = defaultdict(dict)
 
 
 @post_save(Call)
-async def pre_save_call(
+async def post_save_call(
         sender: "Type[Call]",
         instance: Call,
         created: bool,

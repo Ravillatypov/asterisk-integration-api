@@ -43,4 +43,7 @@ RECORDS_UPLOAD_HEADERS = env.dict('RECORDS_UPLOAD_HEADERS', default={})
 CONVERTED_RECORDS_PATH = env.str('CONVERTED_RECORDS_PATH', default='/records')
 
 WS_URL = env.str('WS_URL', default='')
-WS_HEADERS = env.str('WS_HEADERS', default='')
+WS_HEADERS = env.dict('WS_HEADERS', default={})
+
+EVENTS_URL = env.str('EVENTS_URL', default='')
+EVENTS_HEADERS = env.dict('EVENTS_HEADERS', default={})
