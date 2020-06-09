@@ -1,5 +1,5 @@
 import logging
-from asyncio import sleep
+from asyncio import sleep, Lock
 from asyncio.queues import Queue
 from collections import defaultdict
 from typing import Dict, Any, Set, List, Optional, Type
@@ -71,6 +71,7 @@ class WSInterface:
 
 
 pre_events = defaultdict(dict)
+event_lock = Lock()
 
 
 @post_save(Call)
@@ -83,11 +84,15 @@ async def post_save_call(
 ):
     event = instance.event_schema()
     if pre_events[instance.id] != event:
+        await event_lock.acquire()
         pre_events[instance.id] = event
+        event_lock.release()
         await WSInterface.add_event(event)
 
-    if instance.is_finished:
-        del pre_events[instance.id]
+    if instance.is_finished and instance.id in pre_events:
+        await event_lock.acquire()
+        pre_events.pop(instance.id)
+        event_lock.release()
 
 
 class WSService(Service):
