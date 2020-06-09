@@ -1,16 +1,25 @@
 import logging
+from logging.handlers import TimedRotatingFileHandler
 
 from aiomisc import entrypoint, receiver
-from aiomisc.log import basic_config
+from aiomisc.log import JSONLogFormatter
 from tortoise import Tortoise
 
 from .api import WebService
 from .asterisk import AMIService
 from .call_records import services as record_services
 from .services import services as ws_services
-from .settings import DB_URL
+from .settings import DB_URL, LOG_PATH, LOG_LEVEL
 
-basic_config(level=logging.INFO, buffered=False, log_format='json')
+logging.basicConfig()
+logger = logging.getLogger()
+logger.handlers.clear()
+handler = TimedRotatingFileHandler(LOG_PATH, when='d', backupCount=30)
+handler.setFormatter(JSONLogFormatter())
+logging.basicConfig(
+    level=LOG_LEVEL,
+    handlers=[handler],
+)
 
 
 @receiver(entrypoint.PRE_START)
