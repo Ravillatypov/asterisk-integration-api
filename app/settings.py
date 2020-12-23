@@ -50,3 +50,5 @@ EVENTS_HEADERS = env.dict('EVENTS_HEADERS', default={})
 
 LOG_LEVEL = env.str('LOG_LEVEL', default='INFO').upper()
 LOG_PATH = env.str('LOG_PATH', default='root.log')
+
+CAPTURE_EVENTS = env.tuple('CAPTURE_EVENTS', default=None)

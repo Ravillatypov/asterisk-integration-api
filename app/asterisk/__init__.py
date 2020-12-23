@@ -1,9 +1,9 @@
 import logging
 from asyncio import sleep
 
-from aiomisc.log import JSONLogFormatter
 from aiomisc.service.base import Service
 from panoramisk.manager import Manager
+from prettylog import JSONLogFormatter
 
 from ..asterisk.ami import register
 from ..settings import PORT, LOGIN, SECRET, IP, AMI_LOG_PATH

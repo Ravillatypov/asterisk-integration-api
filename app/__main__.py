@@ -2,7 +2,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 from aiomisc import entrypoint, receiver
-from aiomisc.log import JSONLogFormatter
+from prettylog import JSONLogFormatter
 from tortoise import Tortoise
 
 from .api import WebService
