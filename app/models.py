@@ -34,6 +34,14 @@ class Call(TimestampModel):
     channels: fields.ForeignKeyRelation['Channel']
 
     def event_schema(self) -> dict:
+        waiting_time = duration = None
+
+        if self.voice_started_at:
+            waiting_time = (self.voice_started_at - self.created_at).seconds
+
+        if self.finished_at and self.voice_started_at:
+            duration = (self.finished_at - self.voice_started_at).seconds
+
         return {
             'id': self.id,
             'started_at': convert_datetime(self.created_at),
@@ -47,6 +55,8 @@ class Call(TimestampModel):
             'request_number': add_city_code(self.request_number),
             'request_pin': self.request_pin,
             'account_id': self.account_id,
+            'waiting_time': waiting_time,
+            'duration': duration,
         }
 
     @property
