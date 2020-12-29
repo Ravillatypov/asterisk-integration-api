@@ -3,11 +3,10 @@ from typing import Optional
 
 from tortoise.query_utils import Q
 
-
+from app.config import app_config
+from app.consts import CallType
+from app.models import Call, CallRecord
 from .data_types import CallNumbers
-from .. import settings
-from ..consts import CallType
-from ..models import Call, CallRecord
 
 re._pattern_type = re.Pattern
 
@@ -27,7 +26,7 @@ def is_equal(num1: str, num2: str) -> bool:
 
 def is_group_numbers(*numbers: str) -> bool:
     for number in numbers:
-        if number and number in settings.GROUP_NUMBERS:
+        if number and number in app_config.ats.group_numbers:
             return True
     return False
 
@@ -68,11 +67,11 @@ def get_call_type(num: CallNumbers) -> str:
     if not any((num.from_pin, num.from_number, num.request_number, num.request_pin)):
         return result
 
-    elif any((num.from_number and num.from_number in settings.TRUNK_NUMBERS,
+    elif any((num.from_number and num.from_number in app_config.ats.trunks,
               is_internal(num.from_pin) and is_external(num.request_number))):
         result = CallType.OUTBOUND
 
-    elif any((num.request_number and num.request_number in settings.TRUNK_NUMBERS,
+    elif any((num.request_number and num.request_number in app_config.ats.trunks,
               is_external(num.from_number) and is_internal(num.request_pin))):
         result = CallType.INCOMING
 

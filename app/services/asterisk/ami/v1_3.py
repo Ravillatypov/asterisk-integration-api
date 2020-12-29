@@ -5,9 +5,9 @@ from panoramisk.message import Message
 
 from ..cache import calls, channels
 from ..utils import validate_numbers, get_call_type, is_group_numbers, get_internal
-from ...consts import CallState, CallType
-from ...models import Channel, Call, CallRecord
-from ... import settings
+from app.config import app_config
+from app.consts import CallState, CallType
+from app.models import Channel, Call, CallRecord
 
 
 async def var_set(manager: Manager, message: Message):
@@ -154,8 +154,8 @@ async def join(manager: Manager, message: Message):
     queue = message.get('Queue', '')
     call = calls.get(message.get('Uniqueid', ''))
 
-    if queue not in settings.GROUP_NUMBERS:
-        settings.GROUP_NUMBERS += (queue,)
+    if queue not in app_config.ats.group_numbers:
+        app_config.ats.group_numbers.append(queue)
 
     if call:
         call.request_pin = queue

@@ -1,7 +1,7 @@
 from aiohttp import web
 
-from ...models import Call
-from ...services.websocket import WSInterface
+from app.models import Call
+from app.services.websocket import WSInterface
 
 
 class CallsView(web.View):

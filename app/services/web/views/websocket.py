@@ -1,6 +1,6 @@
 from aiohttp import web
 
-from ...services.websocket import WSInterface
+from app.services.websocket import WSInterface
 
 
 class WSView(web.View):

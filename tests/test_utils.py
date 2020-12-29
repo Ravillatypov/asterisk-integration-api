@@ -1,7 +1,7 @@
 import pytest
 
-from app.asterisk.data_types import CallNumbers
-from app.asterisk.utils import get_internal, get_external, validate_numbers, get_call_type
+from app.services.asterisk.data_types import CallNumbers
+from app.services.asterisk.utils import get_internal, get_external, validate_numbers, get_call_type
 from app.consts import CallType
 
 

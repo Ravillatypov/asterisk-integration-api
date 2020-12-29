@@ -1,25 +1,32 @@
-import logging
 from asyncio import sleep
 
 from aiomisc.service.base import Service
 from panoramisk.manager import Manager
-from prettylog import JSONLogFormatter
 
 from ..asterisk.ami import register
-from ..settings import PORT, LOGIN, SECRET, IP, AMI_LOG_PATH
+from app.config import app_config
+from app.misc.logging import get_logger
 
-logger = logging.getLogger('ami')
-file_handler = logging.FileHandler(AMI_LOG_PATH)
-file_handler.setFormatter(JSONLogFormatter(datefmt=None))
-logger.setLevel(logging.INFO)
-logger.addHandler(file_handler)
+logger = get_logger('ami')
 
-manager = Manager(host=IP, port=PORT, log=logger, username=LOGIN, secret=SECRET, ping_delay=1)
-queue_numbers = []
+manager = None
+
+if app_config.ami.enabled:
+    manager = Manager(
+        host=app_config.ami.ip,
+        port=app_config.ami.port,
+        log=logger,
+        username=app_config.ami.login,
+        secret=app_config.ami.secret,
+        ping_delay=1
+    )
 
 
 class AMIService(Service):
     async def start(self):
+        if not app_config.ami.enabled:
+            return
+
         manager.loop = self.loop
         await manager.connect()
 
@@ -33,7 +40,8 @@ class AMIService(Service):
         register(manager)
 
     async def stop(self, *args, **kwargs):
-        manager.close()
+        if isinstance(manager, Manager):
+            manager.close()
 
 
 __all__ = ['manager', 'AMIService']

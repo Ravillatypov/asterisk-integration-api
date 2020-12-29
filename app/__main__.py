@@ -1,30 +1,18 @@
-import logging
-from logging.handlers import TimedRotatingFileHandler
-
+import sentry_sdk
 from aiomisc import entrypoint, receiver
-from prettylog import JSONLogFormatter
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from tortoise import Tortoise
 
-from .api import WebService
-from .asterisk import AMIService
-from .call_records import services as record_services
-from .services import services as ws_services
-from .settings import DB_URL, LOG_PATH, LOG_LEVEL
+from .config import app_config
+from .services import services
 
-logging.basicConfig()
-logger = logging.getLogger()
-logger.handlers.clear()
-handler = TimedRotatingFileHandler(LOG_PATH, when='d', backupCount=30)
-handler.setFormatter(JSONLogFormatter())
-logging.basicConfig(
-    level=LOG_LEVEL,
-    handlers=[handler],
-)
+if app_config.sentry_dsn:
+    sentry_sdk.init(app_config.sentry_dsn, release=app_config.release, integrations=[AioHttpIntegration()])
 
 
 @receiver(entrypoint.PRE_START)
 async def start_up(*args, **kwargs):
-    await Tortoise.init(modules={'models': ['app.models']}, db_url=DB_URL)
+    await Tortoise.init(modules={'models': ['app.models']}, db_url=app_config.db_url)
     await Tortoise.generate_schemas()
 
 
@@ -33,13 +21,9 @@ async def shutdown(*args, **kwargs):
     await Tortoise.close_connections()
 
 
-services = (
-    AMIService(),
-    WebService('0.0.0.0', 8000),
-    *record_services,
-    *ws_services,
-)
-
 if __name__ == '__main__':
     with entrypoint(*services) as loop:
-        loop.run_forever()
+        try:
+            loop.run_forever()
+        except (KeyboardInterrupt, SystemExit):
+            pass

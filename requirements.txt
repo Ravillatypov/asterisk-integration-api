@@ -1,6 +1,6 @@
 aiofiles==0.5.0
 aiosqlite==0.16.0
-envparse==0.2.0
+# envparse==0.2.0
 panoramisk==1.3
 tortoise-orm~=0.16.10
 sentry-sdk~=0.19.5
@@ -12,3 +12,5 @@ ffmpeg-python~=0.2.0
 mutagen~=1.44.0
 aiohttp-swagger~=1.0.14
 prettylog==0.3.0
+pydantic~=1.7.3
+python-dotenv~=0.15.0

@@ -1,8 +1,8 @@
 from aiomisc.service.periodic import PeriodicService
 
-from ..consts import CallState, IntegrationState
-from ..models import CallRecord
-from ..utils import get_mp3_file_duration, convert_record, get_full_path
+from app.consts import CallState, IntegrationState
+from app.models import CallRecord
+from app.utils import get_mp3_file_duration, convert_record, get_full_path
 
 
 class ConvertService(PeriodicService):

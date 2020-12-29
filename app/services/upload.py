@@ -1,8 +1,8 @@
 from aiomisc.service.periodic import PeriodicService
 
-from ..consts import IntegrationState, CallState
-from ..models import CallRecord
-from ..utils import upload_record
+from app.consts import IntegrationState, CallState
+from app.models import CallRecord
+from app.utils import upload_record
 
 
 class UploadService(PeriodicService):

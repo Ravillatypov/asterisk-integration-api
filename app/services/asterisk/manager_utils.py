@@ -4,7 +4,7 @@ from panoramisk.actions import Action as BaseAction
 from panoramisk.message import Message
 
 from . import manager
-from ..settings import START_DIGIT, DEFAULT_CONTEXT
+from app.config import app_config
 
 
 class Action(BaseAction):
@@ -29,15 +29,15 @@ class Action(BaseAction):
 
 async def make_call(from_pin: str, request_number: str) -> str:
     account_id = f'{uuid4()}'
-    if not request_number.startswith(START_DIGIT):
-        request_number = START_DIGIT + request_number[1:]
+    if not request_number.startswith(app_config.ats.start_digit):
+        request_number = app_config.ats.start_digit + request_number[1:]
 
     action = Action(
         Action='Originate',
-        Channel=f'SIP/{from_pin}',
+        Channel=f'{app_config.ats.transport}/{from_pin}',
         Exten=request_number,
         Priority=1,
-        Context=DEFAULT_CONTEXT,
+        Context=app_config.ats.context,
         Callerid=request_number,
         Account=account_id
     )

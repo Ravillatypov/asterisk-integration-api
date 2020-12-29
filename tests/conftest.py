@@ -6,7 +6,7 @@ import pytest
 from panoramisk.testing import Manager
 from tortoise import Tortoise
 
-from app.asterisk.ami import register
+from app.services.asterisk.ami import register
 
 
 @pytest.fixture

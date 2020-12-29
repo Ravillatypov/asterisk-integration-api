@@ -1,4 +1,3 @@
-import logging
 from asyncio import sleep, Lock
 from asyncio.queues import Queue
 from collections import defaultdict
@@ -13,27 +12,30 @@ from aiomisc.service.base import Service
 from tortoise import BaseDBAsyncClient
 from tortoise.signals import post_save
 
-from ..asterisk.manager_utils import make_call
+from app.services.asterisk.manager_utils import make_call
+from ..config import app_config
+from ..misc.logging import get_logger
 from ..models import Call
-from ..settings import WS_HEADERS, WS_URL, EVENTS_URL, EVENTS_HEADERS
+
+logger = get_logger('websocket')
 
 
 async def post_event(event: dict):
-    if not EVENTS_URL:
+    if not app_config.events.url:
         return
 
     try:
-        async with ClientSession(headers=EVENTS_HEADERS) as session:
-            async with session.post(EVENTS_URL, json=event) as resp:
-                logging.info(f'send event status: {resp.status}')
+        async with ClientSession(headers=app_config.events.headers) as session:
+            async with session.post(app_config.events.url, json=event) as resp:
+                logger.info('send event status', response_status=resp.status)
     except Exception as err:
-        logging.warning(f'Error on send event (post): {err}')
+        logger.warning('Error on send event (post)', err=err)
 
 
 class WSInterface:
     ws: ClientWebSocketResponse
     ws_clients: Set[WebSocketResponse] = {}
-    need_stop: bool = not bool(WS_URL)
+    need_stop: bool = not bool(app_config.events.ws_url)
     responses: Dict[str, Any] = {}  # result from server
     events: Queue = Queue()  # events and request to remote server
     commands: Queue = Queue()  # commands from remote server
@@ -113,12 +115,15 @@ class WSReaderService(WSService):
     async def handler(self):
         await sleep(1)
         try:
-            async with ClientSession(headers=WS_HEADERS) as session:
-                async with session.ws_connect(WS_URL, receive_timeout=60, heartbeat=35.0, autoclose=True) as ws:
+            async with ClientSession(headers=app_config.events.ws_headers) as session:
+                async with session.ws_connect(app_config.events.ws_url,
+                                              receive_timeout=60,
+                                              heartbeat=35.0,
+                                              autoclose=True) as ws:
                     WSInterface.ws = ws
                     await self._message_handler()
         except Exception as err:
-            logging.warning(f'WS closed with error: {err}')
+            logger.warning('WS closed with error', err=err)
 
     @staticmethod
     async def _message_handler():
@@ -130,9 +135,9 @@ class WSReaderService(WSService):
                 elif data.get('request_id'):
                     await WSInterface.commands.put(data)
                 else:
-                    logging.warning(f'Bad message from server: {msg}')
+                    logger.warning('Bad message from server', message=msg)
             else:
-                logging.warning(f'Bad message type: {msg.type}')
+                logger.warning('Bad message', type=msg.type)
 
 
 class WSWriterService(WSService):
@@ -145,11 +150,11 @@ class WSWriterService(WSService):
         try:
             await WSInterface.ws.send_json(msg)
         except TypeError as err:
-            logging.warning(f'Message is not serializable. Bad message: {msg}. Error: {err}')
+            logger.warning('Message is not serializable', message=msg, err=err)
         except Exception as err:
             if not WSInterface.ws or WSInterface.ws.closed:
                 await WSInterface.events.put(msg)
-            logging.warning(f'Can`t send message. Error: {err}')
+            logger.warning('Can`t send message', err=err)
 
 
 class CommandService(WSService):

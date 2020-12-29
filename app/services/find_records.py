@@ -1,8 +1,8 @@
 from aiomisc.service.periodic import PeriodicService
 
-from ..asterisk.utils import find_call_record
-from ..consts import CallState, IntegrationState
-from ..models import Call
+from app.services.asterisk.utils import find_call_record
+from app.consts import CallState, IntegrationState
+from app.models import Call
 
 
 class FindRecordService(PeriodicService):

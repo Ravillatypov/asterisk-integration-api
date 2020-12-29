@@ -1,6 +1,6 @@
-from app.asterisk.cache import calls
 from app.consts import CallType, CallState
 from app.models import Channel, Call
+from app.services.asterisk.cache import calls
 from tests.fixtures.v1_3 import events1, events2, events3, events4, events5, events6
 from tests.utils import handle_message
 

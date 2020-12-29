@@ -10,7 +10,7 @@ from panoramisk.message import Message
 async def capture_message(manager: Manager, message: Message):
     now = datetime.utcnow().strftime('%Y-%m-%d')
     try:
-        async with async_open(f'messages-{now}.txt', f'a') as f:
+        async with async_open(f'messages-{now}.txt', 'a') as f:
             await f.write(json.dumps(dict(message)) + '\n')
     except Exception:
         pass

@@ -4,7 +4,7 @@ from typing import Optional
 from panoramisk.manager import Manager
 from panoramisk.message import Message
 
-from app.asterisk.utils import get_number, is_internal, is_external
+from app.services.asterisk.utils import get_number, is_internal, is_external
 from app.consts import CallType, CallState
 from app.models import Call
 
