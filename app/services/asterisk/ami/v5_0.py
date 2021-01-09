@@ -4,13 +4,38 @@ from typing import Optional
 from panoramisk.manager import Manager
 from panoramisk.message import Message
 
-from app.services.asterisk.utils import get_number, is_internal, is_external
 from app.consts import CallType, CallState
-from app.models import Call
+from app.models import Call, CallRecord, Channel
+from app.services.asterisk.utils import get_number, is_internal, is_external
 
 
 async def _get_call(message: Message) -> Optional[Call]:
     return await Call.get_or_none(id=message.get('Linkedid', ''))
+
+
+async def var_set(manager: Manager, message: Message):
+    if message.get('Variable', '') != 'MIXMONITOR_FILENAME':
+        return
+
+    call = await _get_call(message)
+    if not call:
+        return
+
+    monitor_file_name = message.get('Value')[-255:]
+    ch, _ = await Channel.get_or_create(
+        defaults={
+            'name': message.get('Channel'),
+            'call': call,
+            'monitor_file_name': monitor_file_name,
+        },
+        id=message.get('Uniqueid'),
+    )
+
+    await CallRecord.create(
+        call=call,
+        channel=ch,
+        file_name=monitor_file_name,
+    )
 
 
 async def new_channel(manager: Manager, message: Message):
@@ -108,3 +133,4 @@ def register(manager: Manager):
     manager.register_event('Newchannel', new_channel)
     manager.register_event('AgentCalled', agent_called)
     manager.register_event('DialEnd', dial_end)
+    manager.register_event('VarSet', var_set)
