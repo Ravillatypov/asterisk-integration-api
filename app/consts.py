@@ -27,3 +27,18 @@ class IntegrationState(str, Enum):
     CONVERTED = 'CONVERTED'
     UPLOADED = 'UPLOADED'
     SYNCED = 'SYNCED'
+
+
+class Permissions(int, Enum):
+    calls_view = 0
+    calls_edit = 1
+
+    records_view = 2
+
+    tags_view = 3
+    tags_edit = 4
+    tags_add = 5
+
+    users_view = 6
+    users_edit = 7
+    users_add = 8
