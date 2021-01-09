@@ -1,6 +1,8 @@
 from aiohttp import web
 
+from app.api.request import RequestGetCalls
 from app.models import Call
+from app.queries import CallsQueries
 from app.services.websocket import WSInterface
 
 
@@ -19,9 +21,10 @@ class CallsView(web.View):
         "405":
             description: invalid HTTP Method
         """
-        result = {'result': []}
-        async for call in Call.all().order_by('-created_at').limit(100):
-            result['result'].append(call.event_schema())
+        request_model = RequestGetCalls(**self.request.query)
+        calls = await CallsQueries.get_calls(request_model)
+
+        result = {'result': [i.event_schema() for i in calls]}
         return web.json_response(result)
 
     async def post(self):
