@@ -20,3 +20,8 @@ class ResponseUsers(BaseModel):
 
     def __init__(self, result, *args, **kwargs):
         super(ResponseUsers, self).__init__(*args, result=[ResponseUser.from_orm(i) for i in result], **kwargs)
+
+
+class ResponseRefreshAccessToken(BaseModel):
+    refresh_token: str
+    access_token: str

@@ -9,7 +9,7 @@ from ..consts import Permissions
 
 
 class User(TimestampModel):
-    is_active: bool = fields.BooleanField(default=False)
+    is_active: bool = fields.BooleanField(default=True)
     username: str = fields.CharField(max_length=30, unique=True)
     first_name: str = fields.CharField(max_length=30, default='')
     last_name: str = fields.CharField(max_length=30, default='')

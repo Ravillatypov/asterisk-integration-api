@@ -58,6 +58,12 @@ class EventsConfig(BaseSettings):
         env_file_encoding = 'utf-8'
 
 
+class JWTConfig(BaseSettings):
+    access_token_expire: int = Field(3600, env='JWT_ACCESS_EXPIRE')  # hour
+    refresh_token_expire: int = Field(3600 * 24 * 14, env='JWT_REFRESH_EXPIRE')  # 14 days
+    sig: str = Field('Wdfg5G5bNy}lsW4*', env='JWT_SIG')
+
+
 class AppConfig(BaseSettings):
     env: str = Field('local', env='ENVIRONMENT')
     sentry_dsn: str = Field('', env='SENTRY_DSN')
@@ -70,6 +76,7 @@ class AppConfig(BaseSettings):
     record: RecordConfig = Field(None)
     events: EventsConfig = Field(None)
     ats: ATSConfig = Field(None)
+    jwt: JWTConfig = Field(None)
 
     @property
     def is_test(self) -> bool:
@@ -93,3 +100,4 @@ app_config.ami = AmiConfig()
 app_config.record = RecordConfig()
 app_config.events = EventsConfig()
 app_config.ats = ATSConfig()
+app_config.jwt = JWTConfig()
