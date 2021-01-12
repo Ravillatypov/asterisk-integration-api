@@ -25,3 +25,7 @@ class RequestRefreshToken(BaseModel):
 
 class RequestRevokeToken(BaseModel):
     refresh_token: str
+
+
+class RequestAuthByToken(BaseModel):
+    token: str = Field(min_length=5)

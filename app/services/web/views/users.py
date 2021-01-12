@@ -22,7 +22,7 @@ class UsersView(BaseClientAuthView):
             is_active=request_model.is_active,
             permissions=request_model.permissions
         )
-        return web.json_response({'success': True})
+        return self.default_success_response
 
 
 class UserInfoView(BaseClientAuthView):
@@ -37,4 +37,4 @@ class UserInfoView(BaseClientAuthView):
             firts_name=request_model.first_name,
             last_name=request_model.last_name,
         )
-        return web.json_response({'success': True})
+        return self.default_success_response

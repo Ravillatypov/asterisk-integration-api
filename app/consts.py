@@ -2,14 +2,20 @@ from enum import Enum
 from typing import List
 
 
-class CallType(str, Enum):
+class StrEnum(str):
+    @classmethod
+    def all(cls) -> List[str]:
+        return [k for k, v in cls.__dict__.items() if isinstance(v, str) and k == v]
+
+
+class CallType(StrEnum, Enum):
     INCOMING = 'INCOMING'
     OUTBOUND = 'OUTBOUND'
     INTERNAL = 'INTERNAL'
     UNKNOWN = 'UNKNOWN'
 
 
-class CallState(str, Enum):
+class CallState(StrEnum, Enum):
     NEW = 'NEW'
     END = 'END'
     CONNECTED = 'CONNECTED'
@@ -17,7 +23,7 @@ class CallState(str, Enum):
     MISSED = 'MISSED'
 
 
-class IntegrationState(str, Enum):
+class IntegrationState(StrEnum, Enum):
     NEW = 'NEW'
     END = 'END'
     CONNECTED = 'CONNECTED'

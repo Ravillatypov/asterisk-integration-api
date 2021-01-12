@@ -10,6 +10,40 @@ from .base import BaseClientAuthView
 
 class CallsView(BaseClientAuthView):
     async def get(self):
+        """
+      ---
+      description: Get list of calls
+      tags:
+        - call
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseCallsList'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+      security:
+        - jwt
+        """
+
         self._check_permission(Permissions.calls_view)
 
         request_model = RequestGetCalls(**self.request.query)
@@ -40,7 +74,7 @@ class CallsView(BaseClientAuthView):
 
         await call.save()
 
-        return web.json_response({'success': True})
+        return self.default_success_response
 
 
 class CallRecordsView(BaseClientAuthView):

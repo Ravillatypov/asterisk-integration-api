@@ -3,7 +3,13 @@ from typing import List, Dict, Tuple
 from pydantic import BaseSettings, Field
 
 
-class ATSConfig(BaseSettings):
+class BaseConfig(BaseSettings):
+    class Config:
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
+
+
+class ATSConfig(BaseConfig):
     trunks: List[str] = Field([], env='TRUNK_NUMBERS')
     group_numbers: List[str] = Field([], env='GROUP_NUMBERS')
     context: str = Field('default', env='DEFAULT_CONTEXT')
@@ -15,12 +21,8 @@ class ATSConfig(BaseSettings):
     def codes_map(self) -> Dict[int, str]:
         return {len(i): i for i in self.codes}
 
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
 
-
-class AmiConfig(BaseSettings):
+class AmiConfig(BaseConfig):
     enabled: bool = Field(True, env='AMI_IS_ENABLED')
     ip: str = Field('127.0.0.1', env='IP')
     port: int = Field(5038, env='PORT')
@@ -28,12 +30,8 @@ class AmiConfig(BaseSettings):
     secret: str = Field('', env='SECRET')
     capture: List[str] = Field([], env='CAPTURE_EVENTS')
 
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
 
-
-class RecordConfig(BaseSettings):
+class RecordConfig(BaseConfig):
     enabled: bool = Field(True, env='RECORDS_IS_ENABLED')
     store_days: int = Field(30, env='RECORDS_STORE_DAYS')
     path: str = Field('/records', env='RECORDS_PATH')
@@ -41,30 +39,25 @@ class RecordConfig(BaseSettings):
     upload_url: str = Field('', env='RECORDS_UPLOAD_URL')
     upload_headers: Dict[str, str] = Field({}, env='RECORDS_UPLOAD_HEADERS')
 
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
 
-
-class EventsConfig(BaseSettings):
+class EventsConfig(BaseConfig):
     ws_url: str = Field('', env='WS_URL')
     ws_headers: Dict[str, str] = Field({}, env='WS_HEADERS')
 
     url: str = Field('', env='EVENTS_URL')
     headers: Dict[str, str] = Field({}, env='EVENTS_HEADERS')
 
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
 
-
-class JWTConfig(BaseSettings):
+class JWTConfig(BaseConfig):
     access_token_expire: int = Field(3600, env='JWT_ACCESS_EXPIRE')  # hour
     refresh_token_expire: int = Field(3600 * 24 * 14, env='JWT_REFRESH_EXPIRE')  # 14 days
     sig: str = Field('Wdfg5G5bNy}lsW4*', env='JWT_SIG')
 
+    admin_token: str = Field('', env='ADMIN_TOKEN')
+    tokens: Dict[str, List[int]] = Field({}, env='TOKENS')
 
-class AppConfig(BaseSettings):
+
+class AppConfig(BaseConfig):
     env: str = Field('local', env='ENVIRONMENT')
     sentry_dsn: str = Field('', env='SENTRY_DSN')
     release: str = Field('local', env='RELEASE')
@@ -89,10 +82,6 @@ class AppConfig(BaseSettings):
     @property
     def is_dev(self) -> bool:
         return self.env in ('local', 'dev')
-
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
 
 
 app_config = AppConfig()

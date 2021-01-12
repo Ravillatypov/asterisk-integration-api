@@ -28,4 +28,4 @@ class User(TimestampModel):
 class Token(models.Model):
     refresh_token: str = fields.CharField(max_length=512)
     expired_at: datetime = fields.DatetimeField()
-    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User')
+    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField('models.User', on_delete=fields.CASCADE, null=True)

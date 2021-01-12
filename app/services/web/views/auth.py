@@ -1,9 +1,10 @@
 from aiohttp import web
 
-from app.api.request import RequestRegister, RequestAuth, RequestRevokeToken, RequestRefreshToken
+from app.api.request import RequestRegister, RequestAuth, RequestRevokeToken, RequestRefreshToken, RequestAuthByToken
 from app.api.response import ResponseUser
 from app.config import app_config
 from app.models import User, Token
+from app.consts import Permissions
 from app.services.web.exceptions import UsernameIsUsedException, PasswordIsInvalidException
 from .base import BaseView
 
@@ -57,8 +58,8 @@ class RefreshTokenView(BaseView):
     async def post(self):
         data = await self.get_json()
         request_model = RequestRefreshToken(**data)
-        user = await self._get_user_by_refresh(request_model.refresh_token)
-        response_model = await self._get_tokens(user)
+        user, perm = await self._get_user_by_refresh(request_model.refresh_token)
+        response_model = await self._get_tokens(user, permissions=perm)
 
         response = web.json_response(response_model.json())
 
@@ -74,4 +75,27 @@ class RevokeTokenView(BaseView):
         request_model = RequestRevokeToken(**data)
         await Token.filter(refresh_token=request_model.refresh_token).delete()
 
-        return web.json_response({'success': True})
+        return self.default_success_response
+
+
+class LoginByTokenView(BaseView):
+    async def post(self):
+        data = await self.get_json()
+        request_model = RequestAuthByToken(**data)
+
+        if request_model.token == app_config.jwt.admin_token:
+            permissions = [i.value for i in Permissions.all()]
+
+        elif request_model.token in app_config.jwt.tokens:
+            permissions = app_config.jwt.tokens.get(request_model.token)
+
+        else:
+            raise web.HTTPUnauthorized()
+
+        response_model = await self._get_tokens(permissions=permissions)
+        response = web.json_response(response_model.json())
+
+        response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
+        response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)
+
+        return response
