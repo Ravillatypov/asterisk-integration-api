@@ -64,7 +64,7 @@ class UsersRegisterView(BaseView):
 
         token = await self._get_tokens(user)
 
-        response = web.json_response(ResponseUser.from_orm(user).json())
+        response = web.json_response(text=ResponseUser.from_orm(user).json())
 
         response.set_cookie('access_token', token.access_token, max_age=app_config.jwt.access_token_expire)
         response.set_cookie('refresh_token', token.refresh_token, max_age=app_config.jwt.refresh_token_expire)
@@ -120,7 +120,7 @@ class UserLoginView(BaseView):
             raise PasswordIsInvalidException
 
         response_model = await self._get_tokens(user)
-        response = web.json_response(response_model.json())
+        response = web.json_response(text=response_model.json())
 
         response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
         response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)
@@ -172,7 +172,7 @@ class RefreshTokenView(BaseView):
         user, perm = await self._get_user_by_refresh(request_model.refresh_token)
         response_model = await self._get_tokens(user, permissions=perm)
 
-        response = web.json_response(response_model.json())
+        response = web.json_response(text=response_model.json())
 
         response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
         response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)
@@ -278,7 +278,7 @@ class LoginByTokenView(BaseView):
             raise web.HTTPUnauthorized()
 
         response_model = await self._get_tokens(permissions=permissions)
-        response = web.json_response(response_model.json())
+        response = web.json_response(text=response_model.json())
 
         response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
         response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)

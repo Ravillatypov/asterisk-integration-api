@@ -63,7 +63,7 @@ class BaseView(web.View):
             )
 
         if result.__class__ is ModelMetaclass or isinstance(result, BaseModel):
-            return web.json_response(result.json())
+            return web.json_response(text=result.json())
 
         return result
 
