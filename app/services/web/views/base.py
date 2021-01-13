@@ -173,7 +173,8 @@ class BaseClientAuthView(BaseView):
     async def _iter(self) -> StreamResponse:
         await self.authorize()
         response = await super()._iter()
-        return self._set_auth_cookies(response)
+        self._set_auth_cookies(response)
+        return response
 
     async def authorize(self):
         if not app_config.jwt.enabled:
