@@ -1,7 +1,8 @@
 from aiohttp.web_app import Application
 
 from .auth import UsersRegisterView, UserLoginView, RefreshTokenView, RevokeTokenView, LoginByTokenView
-from .calls import CallsView, CallRecordsView
+from .calls import CallsView
+from .records import CallRecordsView
 from .permissions import PermissionsView
 from .tags import TagsView
 from .users import UsersView, UserInfoView

@@ -167,15 +167,18 @@ class BaseView(web.View):
 
 
 class BaseClientAuthView(BaseView):
+    header_name = 'Authorization'
+
     async def _iter(self) -> StreamResponse:
         await self.authorize()
         response = await super()._iter()
         return self._set_auth_cookies(response)
 
     async def authorize(self):
-        header = 'Authorization'
+        if not app_config.jwt.enabled:
+            return
 
-        access = self.request.headers.get(header, '') or self.request.cookies.get('access_token')
+        access = self.request.headers.get(self.header_name, '') or self.request.cookies.get('access_token')
         refresh = self.request.cookies.get('refresh_token')
 
         if not access or not isinstance(access, str):
@@ -203,5 +206,5 @@ class BaseClientAuthView(BaseView):
             self.request['refresh_token'] = token.refresh_token
 
     def _check_permission(self, perm: Permissions):
-        if perm not in self.permissions:
+        if app_config.jwt.enabled and perm not in self.permissions:
             raise web.HTTPForbidden()

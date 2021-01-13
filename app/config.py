@@ -55,6 +55,7 @@ class JWTConfig(BaseConfig):
 
     admin_token: str = Field('', env='ADMIN_TOKEN')
     tokens: Dict[str, List[int]] = Field({}, env='TOKENS')
+    enabled: bool = Field(True, env='JWT_ENABLED')
 
 
 class AppConfig(BaseConfig):

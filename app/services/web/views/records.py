@@ -1,22 +1,25 @@
-from app.api.response import ResponsePermissions, ResponsePermission
+from aiohttp import web
+
 from app.consts import Permissions
+from app.models import Call
 from .base import BaseClientAuthView
 
 
-class PermissionsView(BaseClientAuthView):
+class CallRecordsView(BaseClientAuthView):
     async def get(self):
         """
       ---
-      description: Get permissions
+      description: Get call record file as mp3
       tags:
-        - permissions
+        - call_record
       responses:
         '200':
           description: ok
           content:
-            application/json:
+            application/octet-stream:
               schema:
-                $ref: '#/components/schemas/ResponsePermissions'
+                type: string
+                format: bytes
         '400':
           description: Bad request
           content:
@@ -35,9 +38,22 @@ class PermissionsView(BaseClientAuthView):
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseError'
+        '404':
+          description: Call record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
       security:
         - jwt
         """
 
-        result = [ResponsePermission.from_orm(i) for i in Permissions.all()]
-        return ResponsePermissions(result=result)
+        self._check_permission(Permissions.records_view)
+
+        call_id = self.request.query.get('call_id', '')
+        call = await Call.filter(id=call_id).prefetch_related('record').first()
+
+        if call and call.record and call.record.converted:
+            return web.FileResponse(call.record.converted)
+
+        return web.HTTPNotFound()
