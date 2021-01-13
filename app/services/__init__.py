@@ -1,3 +1,5 @@
+from os import environ
+
 from .asterisk import AMIService
 from .cleanup import CleanupService
 from .convert import ConvertService
@@ -11,7 +13,7 @@ services = (
     WSReaderService(),
     WSWriterService(),
     CommandService(),
-    WebService('0.0.0.0', 9000),
+    WebService('0.0.0.0', environ.get('WEB_PORT', 8000)),
 )
 
 if app_config.record.enabled:
