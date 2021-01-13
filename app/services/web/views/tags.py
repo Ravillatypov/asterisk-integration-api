@@ -2,6 +2,7 @@ from app.api.request import RequestTag
 from app.api.response import ResponseTag, ResponseTags
 from app.consts import Permissions
 from app.models import Tag
+from app.queries import TagsQueries
 from .base import BaseClientAuthView
 
 
@@ -50,14 +51,7 @@ class TagsView(BaseClientAuthView):
         data = await self.get_json()
         request_model = RequestTag(**data)
 
-        tag, _ = await Tag.get_or_create(name=request_model.name.strip().title())
-        if request_model.color:
-            tag.color = request_model.color
-
-        if request_model.description:
-            tag.description = request_model.description
-
-        await tag.save()
+        tag = await TagsQueries.create_or_update_tag(request_model)
 
         return ResponseTag.from_orm(tag)
 

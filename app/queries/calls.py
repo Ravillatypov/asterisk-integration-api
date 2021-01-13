@@ -42,6 +42,7 @@ class CallsQueries:
         if request_model.need_recall:
             numbers = await CallsQueries.get_need_recall_numbers()
             query = query.filter(Q(from_number__in=numbers, request_number__in=numbers, join_type='OR'))
+
         elif request_model.state:
             query = query.filter(state=request_model.state)
 
@@ -53,4 +54,32 @@ class CallsQueries:
         if request_model.call_type:
             query = query.filter(call_type=request_model.call_type)
 
-        return await query
+        calls = await query
+
+        if request_model.need_recall:
+            return CallsQueries.without_number_duplicates(calls)
+
+        return calls
+
+    @staticmethod
+    def without_number_duplicates(calls: List[Call]) -> List[Call]:
+        added_nums = set()
+        skip_nums = set()
+        result = []
+
+        for call in calls:
+
+            if call.call_type == CallType.INCOMING:
+                num = call.from_number
+            else:
+                num = call.request_number
+
+            if not call.is_finished:
+                skip_nums.add(num)
+                continue
+
+            if num not in added_nums:
+                added_nums.add(num)
+                result.append(call)
+
+        return result

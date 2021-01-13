@@ -4,7 +4,7 @@ from app.api.request import RequestGetCalls, RequestCallEdit, RequestCallback
 from app.api.response import ResponseCallsList
 from app.consts import Permissions
 from app.models import Call, Tag
-from app.queries import CallsQueries
+from app.queries import CallsQueries, TagsQueries
 from app.services.websocket import WSInterface
 from .base import BaseClientAuthView
 
@@ -166,7 +166,9 @@ class CallsView(BaseClientAuthView):
             call.comment = request_model.comment
 
         if request_model.tags is not None:
-            call.tags = await Tag.filter(name__in=request_model.tags)
+            tags = await TagsQueries.get_or_create_tags(request_model.tags)
+            for tag in tags:
+                await call.tags.add(tag)
 
         await call.save()
 
