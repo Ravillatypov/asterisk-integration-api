@@ -5,7 +5,8 @@ import jwt
 from aiohttp import web
 from aiohttp.abc import StreamResponse
 from jwt import ExpiredSignatureError, PyJWTError
-from pydantic import ValidationError, BaseModel
+from pydantic import ValidationError
+from pydantic.main import ModelMetaclass
 from tortoise.exceptions import DoesNotExist
 
 from app.api.response import ResponseRefreshAccessToken, ResponseSuccess
@@ -61,7 +62,7 @@ class BaseView(web.View):
                 data={'success': False, 'errors': [{'message': web.HTTPUnauthorized.text}]},
             )
 
-        if isinstance(result, BaseModel):
+        if result.__class__ is ModelMetaclass:
             return web.json_response(result.json())
 
         return result
