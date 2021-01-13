@@ -2,8 +2,8 @@ from datetime import datetime
 
 from tortoise import fields
 
-from .tags import Tag
 from .base import TimestampModel
+from .tags import Tag
 from ..consts import CallState, CallType, IntegrationState
 from ..utils import add_city_code, convert_datetime
 
@@ -60,6 +60,14 @@ class Call(TimestampModel):
     @property
     def is_finished(self) -> bool:
         return self.state in (CallState.END, CallState.NOT_CONNECTED, CallState.MISSED)
+
+    @property
+    def is_record(self) -> bool:
+        return bool(self.record_id)
+
+    @property
+    def started_at(self) -> datetime:
+        return self.created_at
 
 
 class Channel(TimestampModel):

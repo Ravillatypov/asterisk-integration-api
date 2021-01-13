@@ -1,6 +1,7 @@
 from aiohttp import web
 
 from app.api.request import RequestGetCalls, RequestCallEdit, RequestCallback
+from app.api.response import ResponseCallsList
 from app.consts import Permissions
 from app.models import Call, Tag
 from app.queries import CallsQueries
@@ -57,8 +58,7 @@ class CallsView(BaseClientAuthView):
         request_model = RequestGetCalls(**self.request.query)
         calls = await CallsQueries.get_calls(request_model)
 
-        result = {'result': [i.event_schema() for i in calls]}
-        return web.json_response(result)
+        return ResponseCallsList(calls)
 
     async def post(self):
         """

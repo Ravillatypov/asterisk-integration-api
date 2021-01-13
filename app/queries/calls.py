@@ -31,7 +31,13 @@ class CallsQueries:
 
     @staticmethod
     async def get_calls(request_model: RequestGetCalls) -> List[Call]:
-        query = Call.all().order_by('-created_at').offset(request_model.offset).limit(request_model.limit)
+        query = Call.all().prefetch_related('tags').order_by('-created_at')
+
+        if request_model.offset:
+            query = query.offset(request_model.offset)
+
+        if request_model.limit:
+            query = query.limit(request_model.limit)
 
         if request_model.need_recall:
             numbers = await CallsQueries.get_need_recall_numbers()
