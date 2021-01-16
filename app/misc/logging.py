@@ -98,7 +98,7 @@ def get_logger(name: str, level: str = None) -> Logger:
     if level is None:
         level = app_config.log_level
 
-    handler = TimedRotatingFileHandler(f'{app_config.data_path}/logs/{name}.log', when='D', backupCount=10)
+    handler = TimedRotatingFileHandler(f'{app_config.log_path}/{name}.log', when='D', backupCount=10)
     handler.setFormatter(JSONLogFormatter(datefmt='%Y-%m-%d %H:%M:%S'))
     logger = Logger(name, level)
     logger.handlers = []

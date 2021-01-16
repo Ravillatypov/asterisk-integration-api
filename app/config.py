@@ -65,6 +65,8 @@ class AppConfig(BaseConfig):
     data_path: str = Field('.', env='DATA_PATH')
     db_url: str = Field('sqlite://db.sqlite3', env='DB_URL')
     log_level: str = Field('INFO', env='LOG_LEVEL')
+    log_path: str = Field('.', env='LOG_PATH')
+    web_port: int = Field(8000, env='WEB_PORT')
 
     ami: AmiConfig = Field(None)
     record: RecordConfig = Field(None)

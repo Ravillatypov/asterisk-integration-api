@@ -11,7 +11,7 @@ from app.config import app_config
 async def capture_message(manager: Manager, message: Message):
     now = datetime.utcnow().strftime('%Y-%m-%d')
     try:
-        async with async_open(f'{app_config.data_path}/messages-{now}.txt', 'a') as f:
+        async with async_open(f'{app_config.log_path}/messages-{now}.txt', 'a') as f:
             await f.write(json.dumps(dict(message)) + '\n')
     except Exception:
         pass
