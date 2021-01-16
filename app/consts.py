@@ -2,20 +2,20 @@ from enum import Enum
 from typing import List
 
 
-class StrEnum(str):
+class _StrEnum(str):
     @classmethod
     def all(cls) -> List[str]:
-        return [k for k, v in cls.__dict__.items() if isinstance(v, str) and k == v]
+        return list(cls.__dict__['_value2member_map_'].keys())
 
 
-class CallType(StrEnum, Enum):
+class CallType(_StrEnum, Enum):
     INCOMING = 'INCOMING'
     OUTBOUND = 'OUTBOUND'
     INTERNAL = 'INTERNAL'
     UNKNOWN = 'UNKNOWN'
 
 
-class CallState(StrEnum, Enum):
+class CallState(_StrEnum, Enum):
     NEW = 'NEW'
     END = 'END'
     CONNECTED = 'CONNECTED'
@@ -23,7 +23,7 @@ class CallState(StrEnum, Enum):
     MISSED = 'MISSED'
 
 
-class IntegrationState(StrEnum, Enum):
+class IntegrationState(_StrEnum, Enum):
     NEW = 'NEW'
     END = 'END'
     CONNECTED = 'CONNECTED'
@@ -65,4 +65,4 @@ class Permissions(int, Enum):
 
     @classmethod
     def all(cls) -> List['Permissions']:
-        return [Permissions(v) for _, v in cls.__dict__.values() if isinstance(v, int)]
+        return list(cls.__dict__['_value2member_map_'].values())
