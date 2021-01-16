@@ -11,7 +11,7 @@ services = (
     WSReaderService(),
     WSWriterService(),
     CommandService(),
-    WebService('0.0.0.0', 8000),
+    WebService('0.0.0.0', app_config.web_port),
 )
 
 if app_config.record.enabled:

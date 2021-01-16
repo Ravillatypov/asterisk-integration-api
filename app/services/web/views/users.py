@@ -1,36 +1,26 @@
 from aiohttp import web
 
-from app.api.request import RequestGetCalls, RequestCallEdit, RequestCallback
-from app.api.response import ResponseCallsList
+from app.api.request import RequestUser, RequestUpdateUser
+from app.api.response import ResponseUsers, ResponseUser
 from app.consts import Permissions
-from app.models import Call, Tag
-from app.queries import CallsQueries, TagsQueries
-from app.services.websocket import WSInterface
+from app.models import User
 from .base import BaseClientAuthView
 
 
-class CallsView(BaseClientAuthView):
+class UsersView(BaseClientAuthView):
     async def get(self):
         """
       ---
-      description: Get list of calls
+      description: Get list of users
       tags:
-        - call
-      parameters:
-        - $ref: '#/components/parameters/RequestGetCalls_state'
-        - $ref: '#/components/parameters/RequestGetCalls_need_recall'
-        - $ref: '#/components/parameters/RequestGetCalls_started_from'
-        - $ref: '#/components/parameters/RequestGetCalls_started_to'
-        - $ref: '#/components/parameters/RequestGetCalls_call_type'
-        - $ref: '#/components/parameters/RequestGetCalls_limit'
-        - $ref: '#/components/parameters/RequestGetCalls_offset'
+        - users
       responses:
         '200':
           description: ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseCallsList'
+                $ref: '#/components/schemas/ResponseUsers'
         '400':
           description: Bad request
           content:
@@ -53,80 +43,21 @@ class CallsView(BaseClientAuthView):
         - jwt: []
         """
 
-        self._check_permission(Permissions.calls_view)
-
-        request_model = RequestGetCalls(**self.request.query)
-        calls = await CallsQueries.get_calls(request_model)
-
-        return ResponseCallsList(calls)
+        self._check_permission(Permissions.users_view)
+        users = await User.all()
+        return ResponseUsers(users)
 
     async def post(self):
         """
       ---
-      description: Callback
+      description: Update user as admin
       tags:
-        - call
+        - users
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RequestCallback'
-      responses:
-        '200':
-          description: ok
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: object
-                    properties:
-                      request_id:
-                        type: string
-                      data:
-                        $ref: '#/components/schemas/RequestCallback'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseError'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseError'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseError'
-      security:
-        - jwt: []
-        """
-
-        self._check_permission(Permissions.calls_create)
-
-        data = await self.get_json()
-        request_model = RequestCallback(**data)
-
-        res = await WSInterface.request(request_model.dict())
-        return web.json_response({'result': res})
-
-    async def put(self):
-        """
-      ---
-      description: Update call info
-      tags:
-        - call
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RequestCallEdit'
+              $ref: '#/components/schemas/RequestUser'
       responses:
         '200':
           description: ok
@@ -156,20 +87,101 @@ class CallsView(BaseClientAuthView):
         - jwt: []
         """
 
-        self._check_permission(Permissions.calls_edit)
+        self._check_permission(Permissions.users_edit)
+        data = await self.get_json()
+        request_model = RequestUser(**data)
+
+        await User.all().filter(id=request_model.id).update(
+            is_active=request_model.is_active,
+            permissions=request_model.permissions
+        )
+        return self.default_success_response
+
+
+class UserInfoView(BaseClientAuthView):
+    async def get(self):
+        """
+      ---
+      description: Get user info
+      tags:
+        - users
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUser'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+      security:
+        - jwt: []
+        """
+
+        user = await User.get(id=self.uid)
+        return ResponseUser.from_orm(user)
+
+    async def post(self):
+        """
+      ---
+      description: Update user info
+      tags:
+        - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestUpdateUser'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseSuccess'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseError'
+      security:
+        - jwt: []
+        """
 
         data = await self.get_json()
-        request_model = RequestCallEdit(**data)
-        call = await Call.get(id=request_model.id)
+        request_model = RequestUpdateUser(**data)
 
-        if request_model.comment is not None:
-            call.comment = request_model.comment
-
-        if request_model.tags is not None:
-            tags = await TagsQueries.get_or_create_tags(request_model.tags)
-            for tag in tags:
-                await call.tags.add(tag)
-
-        await call.save()
-
+        await User.all().filter(id=self.uid).update(
+            firts_name=request_model.first_name,
+            last_name=request_model.last_name,
+        )
         return self.default_success_response

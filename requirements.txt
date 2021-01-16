@@ -14,3 +14,4 @@ aiohttp-swagger~=1.0.14
 prettylog==0.3.0
 pydantic~=1.7.3
 python-dotenv~=0.15.0
+pyjwt~=2.0.0
