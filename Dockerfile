@@ -20,3 +20,6 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
     apk del .tmp-build-deps
 
 COPY . /code
+
+ARG COMMIT
+ENV RELEASE=$COMMIT
