@@ -45,7 +45,7 @@ class CallRecordsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.records_view)

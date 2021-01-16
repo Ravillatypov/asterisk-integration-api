@@ -36,7 +36,7 @@ class PermissionsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         result = [ResponsePermission.from_orm(i) for i in Permissions.all()]

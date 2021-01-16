@@ -40,7 +40,7 @@ class UsersView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.users_view)
@@ -84,7 +84,7 @@ class UsersView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.users_edit)
@@ -131,7 +131,7 @@ class UserInfoView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         user = await User.get(id=self.uid)
@@ -174,7 +174,7 @@ class UserInfoView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         data = await self.get_json()

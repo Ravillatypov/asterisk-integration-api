@@ -50,7 +50,7 @@ class CallsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.calls_view)
@@ -105,7 +105,7 @@ class CallsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.calls_create)
@@ -153,7 +153,7 @@ class CallsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.calls_edit)

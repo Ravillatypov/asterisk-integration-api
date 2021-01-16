@@ -59,6 +59,8 @@ def _update_definitions(module):
         schema: dict = v.schema()
 
         for ref_name, ref_schema in schema.pop('definitions', {}).items():
+            ref_schema = _replace_refs(ref_schema)
+
             if ref_schema.get('type') == 'object':
                 definitions[ref_name] = ref_schema
             else:

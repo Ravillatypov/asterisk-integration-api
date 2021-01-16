@@ -44,7 +44,7 @@ class TagsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.tags_add)
@@ -87,7 +87,7 @@ class TagsView(BaseClientAuthView):
               schema:
                 $ref: '#/components/schemas/ResponseError'
       security:
-        - jwt
+        - jwt: []
         """
 
         self._check_permission(Permissions.tags_view)
