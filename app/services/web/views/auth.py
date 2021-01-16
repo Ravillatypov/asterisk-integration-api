@@ -1,10 +1,10 @@
 from aiohttp import web
 
 from app.api.request import RequestRegister, RequestAuth, RequestRevokeToken, RequestRefreshToken, RequestAuthByToken
-from app.api.response import ResponseUser
+from app.api.response import ResponseUserWithTokens
 from app.config import app_config
-from app.models import User, Token
 from app.consts import Permissions
+from app.models import User, Token
 from app.services.web.exceptions import UsernameIsUsedException, PasswordIsInvalidException
 from .base import BaseView
 
@@ -27,7 +27,7 @@ class UsersRegisterView(BaseView):
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseUser'
+                $ref: '#/components/schemas/ResponseUserWithTokens'
         '400':
           description: Bad request
           content:
@@ -62,14 +62,9 @@ class UsersRegisterView(BaseView):
         user.set_password(request_model.password)
         await user.save()
 
-        token = await self._get_tokens(user)
+        await self._get_tokens(user)
 
-        response = web.json_response(text=ResponseUser.from_orm(user).json())
-
-        response.set_cookie('access_token', token.access_token, max_age=app_config.jwt.access_token_expire)
-        response.set_cookie('refresh_token', token.refresh_token, max_age=app_config.jwt.refresh_token_expire)
-
-        return response
+        return ResponseUserWithTokens.from_orm(user)
 
 
 class UserLoginView(BaseView):
@@ -119,13 +114,7 @@ class UserLoginView(BaseView):
         if not user.is_valid_password(request_model.password):
             raise PasswordIsInvalidException
 
-        response_model = await self._get_tokens(user)
-        response = web.json_response(text=response_model.json())
-
-        response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
-        response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)
-
-        return response
+        return await self._get_tokens(user)
 
 
 class RefreshTokenView(BaseView):
@@ -170,14 +159,7 @@ class RefreshTokenView(BaseView):
         data = await self.get_json()
         request_model = RequestRefreshToken(**data)
         user, perm = await self._get_user_by_refresh(request_model.refresh_token)
-        response_model = await self._get_tokens(user, permissions=perm)
-
-        response = web.json_response(text=response_model.json())
-
-        response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
-        response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)
-
-        return response
+        return await self._get_tokens(user, permissions=perm)
 
 
 class RevokeTokenView(BaseView):
@@ -277,10 +259,4 @@ class LoginByTokenView(BaseView):
         else:
             raise web.HTTPUnauthorized()
 
-        response_model = await self._get_tokens(permissions=permissions)
-        response = web.json_response(text=response_model.json())
-
-        response.set_cookie('access_token', response_model.access_token, max_age=app_config.jwt.access_token_expire)
-        response.set_cookie('refresh_token', response_model.refresh_token, max_age=app_config.jwt.refresh_token_expire)
-
-        return response
+        return await self._get_tokens(permissions=permissions)

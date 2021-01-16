@@ -136,17 +136,10 @@ class BaseView(web.View):
             user=user,
         )
 
+        user.refresh_token = refresh
+        user.access_token = access
+
         return ResponseRefreshAccessToken(refresh_token=refresh, access_token=access)
-
-    def _set_auth_cookies(self, response: StreamResponse, access: str = None, refresh: str = None) -> StreamResponse:
-        access = access or self.request.get('access_token')
-        refresh = refresh or self.request.get('refresh_token')
-
-        if not access or not refresh:
-            return
-
-        response.set_cookie('access_token', access, max_age=app_config.jwt.access_token_expire)
-        response.set_cookie('refresh_token', refresh, max_age=app_config.jwt.refresh_token_expire)
 
     @staticmethod
     async def _get_user_by_refresh(refresh: str) -> Tuple[Optional[User], List[int]]:
@@ -172,9 +165,7 @@ class BaseClientAuthView(BaseView):
 
     async def _iter(self) -> StreamResponse:
         await self.authorize()
-        response = await super()._iter()
-        self._set_auth_cookies(response)
-        return response
+        return await super()._iter()
 
     async def authorize(self):
         if not app_config.jwt.enabled:
