@@ -16,6 +16,7 @@ class ATSConfig(BaseConfig):
     start_digit: str = Field('8', env='START_DIGIT')
     transport: str = Field('SIP', env='TRANSPORT')
     codes: Tuple[str] = Field(('7',), env='CITY_CODES')
+    phone_map: Dict[str, str] = Field({}, env='PHONE_MAP')
 
     @property
     def codes_map(self) -> Dict[int, str]:

@@ -57,6 +57,9 @@ def get_external(number: str) -> str:
 
 
 def get_number(number: str) -> str:
+    if number in app_config.ats.phone_map:
+        return app_config.ats.phone_map[number]
+
     number = ''.join((i for i in number if i.isdigit()))
     return number
 
