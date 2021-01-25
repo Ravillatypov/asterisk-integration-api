@@ -51,9 +51,13 @@ class CallRecordsView(BaseClientAuthView):
         self._check_permission(Permissions.records_view)
 
         call_id = self.request.query.get('call_id', '')
-        call = await Call.filter(id=call_id).prefetch_related('record').first()
+        call = await Call.filter(id=call_id).prefetch_related('records').first()
 
-        if call and call.record and call.record.converted:
-            return web.FileResponse(call.record.converted)
+        if not call:
+            return web.HTTPNotFound()
+
+        for record in call.records.related_objects:
+            if record.converted:
+                return web.FileResponse(record.converted)
 
         return web.HTTPNotFound()

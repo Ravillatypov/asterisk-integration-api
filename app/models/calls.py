@@ -63,7 +63,7 @@ class Call(TimestampModel):
 
     @property
     def is_record(self) -> bool:
-        return bool(self.record_id)
+        return self.state == CallState.END and bool(self.records.related_objects)
 
     @property
     def started_at(self) -> datetime:

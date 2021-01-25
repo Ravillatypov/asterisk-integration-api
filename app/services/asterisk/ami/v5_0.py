@@ -7,6 +7,7 @@ from panoramisk.message import Message
 from app.consts import CallType, CallState
 from app.models import Call, CallRecord, Channel
 from app.services.asterisk.utils import get_number, is_internal, is_external
+from app.utils import get_full_path
 
 
 async def _get_call(message: Message) -> Optional[Call]:
@@ -21,7 +22,10 @@ async def var_set(manager: Manager, message: Message):
     if not call:
         return
 
-    monitor_file_name = message.get('Value')[-255:]
+    var_file_name = message.get('Value', '')
+    monitor_file_name = get_full_path(var_file_name)
+    manager.log.info(f'record_file: {monitor_file_name}, call_id: {call.id}')
+
     ch, _ = await Channel.get_or_create(
         defaults={
             'name': message.get('Channel'),
@@ -31,11 +35,15 @@ async def var_set(manager: Manager, message: Message):
         id=message.get('Uniqueid'),
     )
 
-    await CallRecord.create(
+    record = await CallRecord.create(
         call=call,
         channel=ch,
         file_name=monitor_file_name,
     )
+
+    if monitor_file_name:
+        call.record = record
+        await call.save()
 
 
 async def new_channel(manager: Manager, message: Message):
@@ -74,6 +82,9 @@ async def new_channel(manager: Manager, message: Message):
 
 
 async def hangup(manager: Manager, message: Message):
+    if message.get('Uniqueid', '') != message.get('Linkedid', ''):
+        return
+
     call = await _get_call(message)
 
     if not call or call.state in (CallState.NOT_CONNECTED, CallState.MISSED, CallState.END):

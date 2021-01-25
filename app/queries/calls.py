@@ -31,7 +31,7 @@ class CallsQueries:
 
     @staticmethod
     async def get_calls(request_model: RequestGetCalls) -> List[Call]:
-        query = Call.all().prefetch_related('tags').order_by('-created_at')
+        query = Call.all().prefetch_related('tags', 'records').order_by('-created_at')
 
         if request_model.offset:
             query = query.offset(request_model.offset)
