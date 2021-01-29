@@ -24,5 +24,3 @@ class ConvertService(PeriodicService):
 
             if record.converted:
                 await record.save()
-                record.call.record = record
-                await record.call.save()

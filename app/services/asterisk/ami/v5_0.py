@@ -6,7 +6,7 @@ from panoramisk.message import Message
 
 from app.consts import CallType, CallState
 from app.models import Call, CallRecord, Channel
-from app.services.asterisk.utils import get_number, is_internal, is_external
+from app.services.asterisk.utils import get_number, is_internal, is_external, is_group_numbers
 from app.utils import get_full_path
 
 
@@ -114,7 +114,9 @@ async def dial_end(manager: Manager, message: Message):
     call.voice_started_at = datetime.utcnow()
 
     request_pin = get_number(message.get('DestCallerIDNum', ''))
-    if call.call_type == CallType.INCOMING and is_internal(request_pin):
+    if call.call_type == CallType.INCOMING and \
+            is_internal(request_pin) and \
+            (not call.request_pin or not is_group_numbers(request_pin)):
         call.request_pin = request_pin
 
     await call.save()
