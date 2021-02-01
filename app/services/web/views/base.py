@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 import jwt
 from aiohttp import web
 from aiohttp.abc import StreamResponse
+from aiohttp_cors import CorsViewMixin, ResourceOptions
 from jwt import ExpiredSignatureError, PyJWTError
 from pydantic import ValidationError, BaseModel
 from pydantic.main import ModelMetaclass
@@ -16,8 +17,15 @@ from app.models import User, Token
 from app.services.web.exceptions import DataNotFoundException, ApiException, exception_codes
 
 
-class BaseView(web.View):
+class BaseView(web.View, CorsViewMixin):
     default_success_response = ResponseSuccess()
+    cors_config = {
+        "*": ResourceOptions(
+                allow_credentials=True,
+                expose_headers="*",
+                allow_headers="*",
+        )
+    }
 
     def __init__(self, request):
         self.uid: int = None

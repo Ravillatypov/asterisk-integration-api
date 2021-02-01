@@ -4,8 +4,8 @@ from aiohttp.web_app import Application
 from aiohttp_swagger import setup_swagger
 from aiomisc.service.aiohttp import AIOHTTPService
 
-from .views import setup_router
 from .spec import definitions, parameters
+from .views import setup_router
 
 
 class WebService(AIOHTTPService):
@@ -27,7 +27,9 @@ class WebService(AIOHTTPService):
                 }
             },
         )
+
         self._set_parameters(app, parameters)
+
         return app
 
     @staticmethod
