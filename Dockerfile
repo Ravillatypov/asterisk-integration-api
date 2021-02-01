@@ -15,8 +15,7 @@ RUN apk add --update --no-cache fuse ffmpeg \
 COPY requirements.txt /requirements.txt
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
         build-base python3-dev libffi-dev coreutils openssl-dev && \
-    pip install --no-cache-dir -U pip cryptography && \
-    pip install --no-cache-dir --no-use-pep517 -r /requirements.txt && \
+    pip install --no-cache-dir -r /requirements.txt && \
     apk del .tmp-build-deps
 
 COPY . /code
