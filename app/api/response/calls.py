@@ -47,6 +47,10 @@ class ResponseCall(BaseModel):
 
 class ResponseCallsList(BaseModel):
     result: List[ResponseCall]
+    count: int
 
     def __init__(self, calls: List[Call]):
-        super().__init__(result=[ResponseCall.from_orm(call) for call in calls])
+        super().__init__(
+            result=[ResponseCall.from_orm(call) for call in calls],
+            count=len(calls),
+        )

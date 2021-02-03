@@ -15,6 +15,7 @@ from app.config import app_config
 from app.consts import Permissions
 from app.models import User, Token
 from app.services.web.exceptions import DataNotFoundException, ApiException, exception_codes
+from app.utils import get_logger
 
 
 class BaseView(web.View, CorsViewMixin):
@@ -30,6 +31,7 @@ class BaseView(web.View, CorsViewMixin):
     def __init__(self, request):
         self.uid: int = None
         self.permissions: List[Permissions] = []
+        self.logger = get_logger('views', 'INFO')
 
         super().__init__(request)
 

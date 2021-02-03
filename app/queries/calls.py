@@ -6,6 +6,9 @@ from tortoise.query_utils import Q
 from app.api.request import RequestGetCalls
 from app.consts import CallType
 from app.models import Call
+from app.utils import get_logger
+
+logger = get_logger('CallsQueries', 'INFO')
 
 
 class CallsQueries:
@@ -54,7 +57,11 @@ class CallsQueries:
         if request_model.call_type:
             query = query.filter(call_type=request_model.call_type)
 
+        logger.info(f'request model: {request_model}', request_model=request_model.dict())
+
         calls = await query
+
+        logger.info(f'{query.sql()}')
 
         if request_model.need_recall:
             return CallsQueries.without_number_duplicates(calls)
