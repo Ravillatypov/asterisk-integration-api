@@ -3,6 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, Field, validator
 
+from app.config import app_config
 from app.consts import CallType, CallState
 from .tag import ResponseTag
 from ...models import Call
@@ -35,6 +36,13 @@ class ResponseCall(BaseModel):
             return val
 
         return [ResponseTag.from_orm(i) for i in val.related_objects]
+
+    @validator('request_pin', pre=True)
+    def _request_pin(cls, val: str):
+        if val in app_config.ats.group_numbers:
+            return ''
+
+        return val
 
 
 class ResponseCallsList(BaseModel):
