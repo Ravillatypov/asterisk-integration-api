@@ -1,4 +1,7 @@
+import jwt
 from pydantic import BaseModel, Field, validator
+
+from app.config import app_config
 
 
 class RequestAuth(BaseModel):
@@ -21,6 +24,18 @@ class RequestRegister(BaseModel):
 
 class RequestRefreshToken(BaseModel):
     refresh_token: str
+
+    @validator('refresh_token', pre=True)
+    def _validate(cls, val: str) -> str:
+        try:
+            jwt.decode(val, app_config.jwt.sig)
+        except jwt.ExpiredSignatureError:
+            raise ValueError('token is expired')
+        except jwt.InvalidSignatureError:
+            raise ValueError('sign check failed')
+        except Exception:
+            raise ValueError('Is not JWT token')
+        return val
 
 
 class RequestRevokeToken(BaseModel):
