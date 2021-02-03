@@ -5,7 +5,7 @@ import jwt
 from aiohttp import web
 from aiohttp.abc import StreamResponse
 from aiohttp_cors import CorsViewMixin, ResourceOptions
-from jwt import ExpiredSignatureError, PyJWTError
+from jwt import PyJWTError
 from pydantic import ValidationError, BaseModel
 from pydantic.main import ModelMetaclass
 from tortoise.exceptions import DoesNotExist
@@ -68,6 +68,11 @@ class BaseView(web.View, CorsViewMixin):
             return web.json_response(
                 status=web.HTTPUnauthorized.status_code,
                 data={'success': False, 'errors': [{'message': web.HTTPUnauthorized.text}]},
+            )
+        except Exception as e:
+            return web.json_response(
+                status=500,
+                data={'success': False, 'errors': [{'message': str(e)}]}
             )
 
         if result.__class__ is ModelMetaclass or isinstance(result, BaseModel):
@@ -179,11 +184,10 @@ class BaseClientAuthView(BaseView):
         if not app_config.jwt.enabled or self.request.method.lower() not in ['get', 'post', 'patch', 'put', 'delete']:
             return
 
-        access = self.request.headers.get(self.header_name, '') or self.request.cookies.get('access_token')
-        refresh = self.request.cookies.get('refresh_token')
+        access = self.request.headers.get(self.header_name, '')
 
         if not access or not isinstance(access, str):
-            raise web.HTTPForbidden()
+            raise web.HTTPUnauthorized()
 
         try:
             payload = jwt.decode(access, app_config.jwt.sig, algorithms=['HS256'])
@@ -193,18 +197,8 @@ class BaseClientAuthView(BaseView):
 
             self.uid = payload.get('uid')
             self.permissions = Permissions.get_permissions(payload.get('permissions', []))
-        except ExpiredSignatureError:
-            user, perm = await self._get_user_by_refresh(refresh)
-
-            if user:
-                self.uid = user.id
-                self.permissions = Permissions.get_permissions(user.permissions)
-            else:
-                self.permissions = Permissions.get_permissions(perm)
-
-            token = await self._get_tokens(user, permissions=perm)
-            self.request['access_token'] = token.access_token
-            self.request['refresh_token'] = token.refresh_token
+        except Exception:
+            raise web.HTTPUnauthorized()
 
     def _check_permission(self, perm: Permissions):
         if app_config.jwt.enabled and perm not in self.permissions:
