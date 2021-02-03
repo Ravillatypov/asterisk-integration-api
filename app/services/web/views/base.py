@@ -21,9 +21,9 @@ class BaseView(web.View, CorsViewMixin):
     default_success_response = ResponseSuccess()
     cors_config = {
         "*": ResourceOptions(
-                allow_credentials=True,
-                expose_headers="*",
-                allow_headers="*",
+            allow_credentials=True,
+            expose_headers="*",
+            allow_headers="*",
         )
     }
 
@@ -176,7 +176,7 @@ class BaseClientAuthView(BaseView):
         return await super()._iter()
 
     async def authorize(self):
-        if not app_config.jwt.enabled:
+        if not app_config.jwt.enabled or self.request.method.lower() not in ['get', 'post', 'patch', 'put', 'delete']:
             return
 
         access = self.request.headers.get(self.header_name, '') or self.request.cookies.get('access_token')
