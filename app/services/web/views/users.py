@@ -91,9 +91,14 @@ class UsersView(BaseClientAuthView):
         data = await self.get_json()
         request_model = RequestUser(**data)
 
+        kwargs = {}
+        if request_model.password:
+            kwargs['pass_hash'] = User.get_pass_hash(request_model.password)
+
         await User.all().filter(id=request_model.id).update(
             is_active=request_model.is_active,
-            permissions=request_model.permissions
+            permissions=request_model.permissions,
+            **kwargs,
         )
         return self.default_success_response
 
@@ -180,8 +185,13 @@ class UserInfoView(BaseClientAuthView):
         data = await self.get_json()
         request_model = RequestUpdateUser(**data)
 
+        kwargs = {}
+        if request_model.password:
+            kwargs['pass_hash'] = User.get_pass_hash(request_model.password)
+
         await User.all().filter(id=self.uid).update(
             firts_name=request_model.first_name,
             last_name=request_model.last_name,
+            **kwargs,
         )
         return self.default_success_response

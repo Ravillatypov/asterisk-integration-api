@@ -19,10 +19,14 @@ class User(TimestampModel):
                                                        Permissions.users_view.value])
 
     def set_password(self, new_pass: str):
-        self.pass_hash = sha3_256(new_pass.encode()).hexdigest()
+        self.pass_hash = self.get_pass_hash(new_pass)
 
     def is_valid_password(self, password: str) -> bool:
-        return self.pass_hash == sha3_256(password.encode()).hexdigest()
+        return self.pass_hash == self.get_pass_hash(password)
+
+    @classmethod
+    def get_pass_hash(cls, password: str) -> str:
+        return sha3_256(password.encode()).hexdigest()
 
 
 class Token(models.Model):
