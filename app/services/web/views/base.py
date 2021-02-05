@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Awaitable
 
 import jwt
 from aiohttp import web
@@ -11,11 +11,13 @@ from pydantic.main import ModelMetaclass
 from tortoise.exceptions import DoesNotExist
 
 from app.api.response import ResponseRefreshAccessToken, ResponseSuccess
-from app.config import app_config
+from app.config import app_config, AppConfig
 from app.consts import Permissions
 from app.models import User, Token
 from app.services.web.exceptions import DataNotFoundException, ApiException, exception_codes
 from app.utils import get_logger
+
+_http_methods = ['get', 'post', 'patch', 'put', 'delete']
 
 
 class BaseView(web.View, CorsViewMixin):
@@ -36,8 +38,12 @@ class BaseView(web.View, CorsViewMixin):
         super().__init__(request)
 
     async def _iter(self) -> StreamResponse:
+        return await self._view_exception_handler(super(BaseView, self)._iter())
+
+    @staticmethod
+    async def _view_exception_handler(coroutine: Awaitable) -> StreamResponse:
         try:
-            result = await super()._iter()
+            result = await coroutine
         except ApiException as e:
             return web.json_response(
                 status=e.status_code,
@@ -174,16 +180,25 @@ class BaseView(web.View, CorsViewMixin):
 
         return user, payload.get('permissions', [])
 
+    @property
+    def conf(self) -> AppConfig:
+        return app_config
+
 
 class BaseClientAuthView(BaseView):
     header_name = 'Authorization'
+    auth_not_required: Tuple[str] = tuple()
 
     async def _iter(self) -> StreamResponse:
+        return await self._view_exception_handler(self._handler())
+
+    async def _handler(self):
         await self.authorize()
         return await super()._iter()
 
     async def authorize(self):
-        if not app_config.jwt.enabled or self.request.method.lower() not in ['get', 'post', 'patch', 'put', 'delete']:
+        method = self.request.method.lower()
+        if not app_config.jwt.enabled or method not in _http_methods or method in self.auth_not_required:
             return
 
         access = self.request.headers.get(self.header_name, '')

@@ -18,6 +18,9 @@ class ATSConfig(BaseConfig):
     codes: Tuple[str] = Field(('7',), env='CITY_CODES')
     phone_map: Dict[str, str] = Field({}, env='PHONE_MAP')
 
+    company_logo: str = Field('', env='COMPANY_LOGO')
+    company_name: str = Field('', env='COMPANY_NAME')
+
     @property
     def codes_map(self) -> Dict[int, str]:
         return {len(i): i for i in self.codes}

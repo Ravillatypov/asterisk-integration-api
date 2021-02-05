@@ -1,6 +1,7 @@
 import aiohttp_cors
 from aiohttp.web_app import Application
 
+from .ats import AtsInfoView
 from .auth import UsersRegisterView, UserLoginView, RefreshTokenView, RevokeTokenView, LoginByTokenView
 from .calls import CallsView
 from .permissions import PermissionsView
@@ -18,7 +19,7 @@ def setup_router(app: Application):
                 allow_credentials=True,
                 expose_headers="*",
                 allow_headers="*",
-                allow_methods=['GET', 'POST', 'PATCH', 'DELETE']
+                allow_methods=['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
             )
         })
 
@@ -34,6 +35,7 @@ def setup_router(app: Application):
     cors.add(app.router.add_view('/api/v1/users/revoke_token/', RevokeTokenView, name='revoke_token'), webview=True)
     cors.add(app.router.add_view('/api/v1/tags/', TagsView, name='tags'), webview=True)
     cors.add(app.router.add_view('/api/v1/permissions/', PermissionsView, name='permissions'), webview=True)
+    cors.add(app.router.add_view('/api/v1/ats/info/', AtsInfoView, name='ats_info'), webview=True)
 
 
 __all__ = ['CallsView', 'WSView', 'CallRecordsView', 'setup_router']
