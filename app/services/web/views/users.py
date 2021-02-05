@@ -190,7 +190,7 @@ class UserInfoView(BaseClientAuthView):
             kwargs['pass_hash'] = User.get_pass_hash(request_model.password)
 
         await User.all().filter(id=self.uid).update(
-            firts_name=request_model.first_name,
+            first_name=request_model.first_name,
             last_name=request_model.last_name,
             **kwargs,
         )
