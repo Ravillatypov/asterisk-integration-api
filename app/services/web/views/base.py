@@ -201,7 +201,7 @@ class BaseClientAuthView(BaseView):
         if not app_config.jwt.enabled or method not in _http_methods or method in self.auth_not_required:
             return
 
-        access = self.request.headers.get(self.header_name, '')
+        access = self._get_access_token()
 
         if not access or not isinstance(access, str):
             raise web.HTTPUnauthorized()
@@ -220,3 +220,6 @@ class BaseClientAuthView(BaseView):
     def _check_permission(self, perm: Permissions):
         if app_config.jwt.enabled and perm not in self.permissions:
             raise web.HTTPForbidden()
+
+    async def _get_access_token(self) -> str:
+        return self.request.headers.get(self.header_name, '')

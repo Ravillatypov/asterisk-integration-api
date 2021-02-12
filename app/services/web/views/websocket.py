@@ -17,3 +17,6 @@ class WSView(BaseClientAuthView):
         WSInterface.ws_clients.remove(ws)
 
         return ws
+
+    async def _get_access_token(self) -> str:
+        return self.request.query.get('token', '')
