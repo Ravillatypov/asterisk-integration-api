@@ -201,7 +201,7 @@ class BaseClientAuthView(BaseView):
         if not app_config.jwt.enabled or method not in _http_methods or method in self.auth_not_required:
             return
 
-        access = self._get_access_token()
+        access = await self._get_access_token()
 
         if not access or not isinstance(access, str):
             raise web.HTTPUnauthorized()
