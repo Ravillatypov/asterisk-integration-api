@@ -1,7 +1,7 @@
 from asyncio import sleep, Lock
 from asyncio.queues import Queue
 from collections import defaultdict
-from typing import Dict, Any, Set, List, Optional, Type
+from typing import Dict, Any, List, Optional, Type
 from uuid import uuid4
 
 from aiohttp import WSMsgType
@@ -12,12 +12,13 @@ from aiomisc.service.base import Service
 from tortoise import BaseDBAsyncClient
 from tortoise.signals import post_save
 
+from app.api.response import ResponseCall
 from app.services.asterisk.manager_utils import make_call
 from ..config import app_config
 from ..misc.logging import get_logger
 from ..models import Call
 
-logger = get_logger('websocket')
+logger = get_logger('websocket', 'INFO')
 
 
 async def post_event(event: dict):
@@ -34,7 +35,7 @@ async def post_event(event: dict):
 
 class WSInterface:
     ws: ClientWebSocketResponse
-    ws_clients: Set[WebSocketResponse] = {}
+    ws_clients: List[WebSocketResponse] = []
     need_stop: bool = not bool(app_config.events.ws_url)
     responses: Dict[str, Any] = {}  # result from server
     events: Queue = Queue()  # events and request to remote server
@@ -60,7 +61,7 @@ class WSInterface:
         return cls.responses.pop(request_id)
 
     @classmethod
-    async def add_event(cls, data):
+    async def add_event(cls, data: dict, json_event: str):
         if not cls.need_stop:
             await cls.events.put({
                 'data': data,
@@ -69,10 +70,10 @@ class WSInterface:
 
         await post_event(data)
         for ws in cls.ws_clients:
-            await ws.send_json(data)
+            await ws.send_str(json_event)
 
 
-pre_events = defaultdict(dict)
+pre_events = defaultdict(str)
 event_lock = Lock()
 
 
@@ -84,12 +85,13 @@ async def post_save_call(
         using_db: "Optional[BaseDBAsyncClient]",
         update_fields: List[str]
 ):
-    event = instance.event_schema()
-    if pre_events[instance.id] != event:
+    event = ResponseCall.from_orm(instance)
+    json_event = event.json()
+    if pre_events[instance.id] != json_event:
         await event_lock.acquire()
-        pre_events[instance.id] = event
+        pre_events[instance.id] = json_event
         event_lock.release()
-        await WSInterface.add_event(event)
+        await WSInterface.add_event(event.dict(), json_event)
 
     if instance.is_finished and instance.id in pre_events:
         await event_lock.acquire()

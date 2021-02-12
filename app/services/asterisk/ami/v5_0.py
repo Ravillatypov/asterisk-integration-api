@@ -11,7 +11,7 @@ from app.utils import get_full_path
 
 
 async def _get_call(message: Message) -> Optional[Call]:
-    return await Call.get_or_none(id=message.get('Linkedid', ''))
+    return await Call.all().prefetch_related('tags', 'records').get_or_none(id=message.get('Linkedid', ''))
 
 
 async def var_set(manager: Manager, message: Message):

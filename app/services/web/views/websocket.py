@@ -1,10 +1,14 @@
 from aiohttp import web
 from aiohttp_cors import ResourceOptions, CorsViewMixin
 
+from app.misc.logging import get_logger
 from app.services.websocket import WSInterface
 
 
-class WSView(web.View, CorsViewMixin):
+logger = get_logger('websocket', 'INFO')
+
+
+class CallsWSView(web.View, CorsViewMixin):
     cors_config = {
         "*": ResourceOptions(
             allow_credentials=True,
@@ -15,13 +19,18 @@ class WSView(web.View, CorsViewMixin):
 
     async def get(self):
         ws = web.WebSocketResponse()
+
         await ws.prepare(self.request)
 
-        WSInterface.ws_clients.add(ws)
+        WSInterface.ws_clients.append(ws)
+        logger.info(f'New WS connection. WS counts: {len(WSInterface.ws_clients)}')
 
         async for msg in ws:
             pass
 
-        WSInterface.ws_clients.remove(ws)
+        try:
+            WSInterface.ws_clients.remove(ws)
+        except Exception as err:
+            logger.warning('Close error', err=err)
 
         return ws

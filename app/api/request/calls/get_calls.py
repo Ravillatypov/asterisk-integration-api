@@ -11,5 +11,5 @@ class RequestGetCalls(BaseModel):
     started_from: datetime = Field(default_factory=lambda: datetime.utcnow() - timedelta(days=30), parameter='query')
     started_to: datetime = Field(None, parameter='query')
     call_type: CallType = Field(None, parameter='query')
-    limit: int = Field(10000, parameter='query')
+    limit: int = Field(1000, parameter='query')
     offset: int = Field(0, parameter='query')

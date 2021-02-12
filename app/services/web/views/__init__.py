@@ -8,7 +8,7 @@ from .permissions import PermissionsView
 from .records import CallRecordsView
 from .tags import TagsView
 from .users import UsersView, UserInfoView
-from .websocket import WSView
+from .websocket import CallsWSView
 
 
 def setup_router(app: Application):
@@ -24,7 +24,7 @@ def setup_router(app: Application):
         })
 
     cors.add(app.router.add_view('/api/v1/calls/', CallsView, name='calls'), webview=True)
-    cors.add(app.router.add_view('/api/v1/ws/', WSView, name='ws'), webview=True)
+    cors.add(app.router.add_view('/api/v1/calls/ws/', CallsWSView, name='ws'), webview=True)
     cors.add(app.router.add_view('/api/v1/record/', CallRecordsView, name='record'), webview=True)
     cors.add(app.router.add_view('/api/v1/users/', UsersView, name='users'), webview=True)
     cors.add(app.router.add_view('/api/v1/users/info/', UserInfoView, name='user_info'), webview=True)
@@ -38,4 +38,4 @@ def setup_router(app: Application):
     cors.add(app.router.add_view('/api/v1/ats/info/', AtsInfoView, name='ats_info'), webview=True)
 
 
-__all__ = ['CallsView', 'WSView', 'CallRecordsView', 'setup_router']
+__all__ = ['CallsView', 'CallsWSView', 'CallRecordsView', 'setup_router']
