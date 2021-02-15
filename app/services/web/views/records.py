@@ -12,6 +12,11 @@ class CallRecordsView(BaseClientAuthView):
       description: Get call record file as mp3
       tags:
         - call_record
+      parameters:
+        - in: query
+          name: call_id
+          type: string
+          required: true
       responses:
         '200':
           description: ok

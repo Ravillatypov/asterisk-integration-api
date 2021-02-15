@@ -1,10 +1,7 @@
 from typing import List
 
-from tortoise import Tortoise
-from tortoise.query_utils import Q
-
 from app.api.request import RequestGetCalls
-from app.consts import CallType
+from app.consts import CallType, CallState
 from app.models import Call
 from app.utils import get_logger
 
@@ -12,25 +9,6 @@ logger = get_logger('CallsQueries', 'INFO')
 
 
 class CallsQueries:
-
-    @staticmethod
-    async def get_need_recall_numbers() -> List[str]:
-        conn = Tortoise.get_connection('default')
-        data = await conn.execute_query_dict(f'''
-                  SELECT number FROM 
-                      (SELECT 
-                          CASE 
-                            WHEN call_type='{CallType.INCOMING.value}' THEN from_number 
-                            WHEN call_type='{CallType.OUTBOUND.value}' THEN request_number 
-                            ELSE NULL 
-                          END number, 
-                          state, 
-                          MAX(created_at) max_created 
-                      FROM "call" GROUP BY number) AS t 
-                  WHERE t.number IS NOT NULL AND 
-                        t.state IN ('MISSED', 'NOT_CONNECTED')
-        ''')
-        return [i.get('number') for i in data]
 
     @staticmethod
     async def get_calls(request_model: RequestGetCalls) -> List[Call]:
@@ -42,11 +20,7 @@ class CallsQueries:
         if request_model.limit:
             query = query.limit(request_model.limit)
 
-        if request_model.need_recall:
-            numbers = await CallsQueries.get_need_recall_numbers()
-            query = query.filter(Q(from_number__in=numbers, request_number__in=numbers, join_type='OR'))
-
-        elif request_model.state:
+        if not request_model.need_recall and request_model.state:
             query = query.filter(state=request_model.state)
 
         query = query.filter(created_at__gte=request_model.started_from)
@@ -64,29 +38,29 @@ class CallsQueries:
         logger.info(f'{query.sql()}')
 
         if request_model.need_recall:
-            return CallsQueries.without_number_duplicates(calls)
+            return CallsQueries.need_recalls(calls)
 
         return calls
 
     @staticmethod
-    def without_number_duplicates(calls: List[Call]) -> List[Call]:
-        added_nums = set()
-        skip_nums = set()
+    def need_recalls(calls: List[Call]) -> List[Call]:
+        processed_numbers = set()
         result = []
 
         for call in calls:
+            if call.call_type not in (CallType.INCOMING, CallType.OUTBOUND):
+                continue
+            if call.from_number in processed_numbers or call.request_number in processed_numbers:
+                continue
 
             if call.call_type == CallType.INCOMING:
                 num = call.from_number
             else:
                 num = call.request_number
 
-            if not call.is_finished:
-                skip_nums.add(num)
-                continue
+            processed_numbers.add(num)
 
-            if num not in added_nums:
-                added_nums.add(num)
+            if call.state in (CallState.NOT_CONNECTED, CallState.MISSED):
                 result.append(call)
 
         return result
