@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Tuple, Awaitable
+from typing import List, Optional, Tuple, Awaitable, Type
 
 import jwt
 from aiohttp import web
@@ -119,7 +119,8 @@ class BaseView(web.View, CorsViewMixin):
             user: User = None,
             uid: int = None,
             permissions: List[int] = None,
-    ) -> ResponseRefreshAccessToken:
+            response_cls: Type[BaseModel] = ResponseRefreshAccessToken,
+    ):
 
         if user:
             uid = user.id
@@ -151,16 +152,23 @@ class BaseView(web.View, CorsViewMixin):
             app_config.jwt.sig,
         )
 
-        await Token.create(
-            refresh_token=refresh,
-            expired_at=refresh_expire,
-            user=user,
-        )
+        if user:
+            await Token.create(
+                refresh_token=refresh,
+                expired_at=refresh_expire,
+                user=user,
+            )
+        else:
+            user = User()
 
         user.refresh_token = refresh
         user.access_token = access
 
-        return ResponseRefreshAccessToken(refresh_token=refresh, access_token=access)
+        response_model = response_cls.from_orm(user)
+        response = web.json_response(response_model.dict())
+        response.set_cookie('accessKey', access, max_age=app_config.jwt.access_token_expire)
+
+        return response
 
     @staticmethod
     async def _get_user_by_refresh(refresh: str) -> Tuple[Optional[User], List[int]]:
@@ -222,4 +230,4 @@ class BaseClientAuthView(BaseView):
             raise web.HTTPForbidden()
 
     async def _get_access_token(self) -> str:
-        return self.request.headers.get(self.header_name, '')
+        return self.request.headers.get(self.header_name, '') or self.request.cookies.get('accessKey', '')

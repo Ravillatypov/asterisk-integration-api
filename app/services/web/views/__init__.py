@@ -30,7 +30,7 @@ def setup_router(app: Application):
     cors.add(app.router.add_view('/api/v1/users/info/', UserInfoView, name='user_info'), webview=True)
     cors.add(app.router.add_view('/api/v1/users/register/', UsersRegisterView, name='users_register'), webview=True)
     cors.add(app.router.add_view('/api/v1/users/login/', UserLoginView, name='users_login'), webview=True)
-    cors.add(app.router.add_view('/api/v1/users/login/token/', UserLoginView, name='login_by_token'), webview=True)
+    cors.add(app.router.add_view('/api/v1/users/login/token/', LoginByTokenView, name='login_by_token'), webview=True)
     cors.add(app.router.add_view('/api/v1/users/refresh_token/', RefreshTokenView, name='refresh_token'), webview=True)
     cors.add(app.router.add_view('/api/v1/users/revoke_token/', RevokeTokenView, name='revoke_token'), webview=True)
     cors.add(app.router.add_view('/api/v1/tags/', TagsView, name='tags'), webview=True)

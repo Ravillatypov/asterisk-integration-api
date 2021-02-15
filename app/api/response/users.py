@@ -26,6 +26,9 @@ class ResponseRefreshAccessToken(BaseModel):
     refresh_token: str
     access_token: str
 
+    class Config:
+        orm_mode = True
+
 
 class ResponseUserWithTokens(ResponseUser, ResponseRefreshAccessToken):
     pass

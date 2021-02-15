@@ -62,9 +62,10 @@ class UsersRegisterView(BaseView):
         user.set_password(request_model.password)
         await user.save()
 
-        await self._get_tokens(user)
-
-        return ResponseUserWithTokens.from_orm(user)
+        return await self._get_tokens(
+            user,
+            response_cls=ResponseUserWithTokens,
+        )
 
 
 class UserLoginView(BaseView):
@@ -259,4 +260,4 @@ class LoginByTokenView(BaseView):
         else:
             raise web.HTTPUnauthorized()
 
-        return await self._get_tokens(permissions=permissions)
+        return await self._get_tokens(uid=0, permissions=permissions)
