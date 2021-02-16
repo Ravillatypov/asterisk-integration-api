@@ -10,3 +10,7 @@ class TimestampModel(Model):
 
     class Meta:
         abstract = True
+
+
+class Version(Model):
+    version: int = fields.SmallIntField()

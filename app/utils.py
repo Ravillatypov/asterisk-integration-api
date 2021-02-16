@@ -6,6 +6,7 @@ from typing import Union
 
 import ffmpeg
 from aiohttp.client import ClientSession
+from aiomisc import threaded
 from aiomisc.io import async_open
 from mutagen.mp3 import MPEGInfo
 
@@ -27,10 +28,17 @@ def get_full_path(file_name: str) -> str:
     return ''
 
 
+@threaded
 def convert_record(source: str, call_id: str) -> str:
     if not source or not call_id or not Path(source).exists():
         return ''
-    export_path = Path(app_config.record.converted_path).joinpath(f'{call_id}-{time()}.mp3')
+    now = datetime.utcnow()
+    date_path = now.strftime('%Y/%m/%d')
+
+    export_dir = Path(app_config.record.converted_path).joinpath(date_path)
+    export_dir.mkdir(parents=True, exist_ok=True)
+
+    export_path = export_dir.joinpath(f'{call_id}-{time()}.mp3')
 
     if export_path.exists():
         return export_path.as_posix()

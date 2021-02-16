@@ -1,7 +1,11 @@
-from aiomisc.service.periodic import PeriodicService
+from os.path import getsize
+from typing import List, Optional
 
-from app.consts import CallState, IntegrationState
-from app.models import CallRecord
+from aiomisc.service.periodic import PeriodicService
+from tortoise.functions import Count
+
+from app.consts import CallState
+from app.models import CallRecord, Call
 from app.utils import get_mp3_file_duration, convert_record, get_full_path
 
 
@@ -11,16 +15,34 @@ class ConvertService(PeriodicService):
     __required__ = ()
 
     async def callback(self):
-        async for record in CallRecord.filter(
-                converted=None,
-                call__state=CallState.END,
-                call__integration_state__not=IntegrationState.UPLOADED,
-                call__record=None,
-        ).prefetch_related('call'):
-            path = get_full_path(record.file_name)
+        query = Call.all().annotate(
+            records_count=Count('records')
+        ).prefetch_related('records').filter(
+            state=CallState.END,
+            record_path=None,
+            records_count__gte=1
+        ).limit(50)
 
-            record.converted = convert_record(path, record.call_id)
+        async for call in query:
+            record = self._choice_record(call.records)
+
+            record.converted = await convert_record(record.full_path, call.id)
             record.duration = await get_mp3_file_duration(record.converted)
 
             if record.converted:
                 await record.save()
+
+            call.record_path = record.converted
+            await call.save()
+
+    @staticmethod
+    def _choice_record(records: List[CallRecord]) -> Optional[CallRecord]:
+        record_sizes = {}
+
+        for record in records:
+            record.full_path = get_full_path(record.file_name)
+
+            if record.full_path:
+                record_sizes[getsize(record.full_path)] = record
+
+        return record_sizes.get(max(record_sizes))

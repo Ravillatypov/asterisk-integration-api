@@ -23,6 +23,7 @@ class Call(TimestampModel):
     record: fields.ForeignKeyNullableRelation['CallRecord'] = fields.ForeignKeyField('models.Call', null=True)
     external_id: str = fields.CharField(max_length=70, index=True, null=True)
     comment: str = fields.CharField(max_length=512, default='')
+    record_path: str = fields.CharField(max_length=255, null=True)
     tags: fields.ManyToManyRelation[Tag] = fields.ManyToManyField(
         'models.Tag', related_name='calls', through='call_tags'
     )
