@@ -62,3 +62,8 @@ class CallRecordsView(BaseClientAuthView):
             return web.HTTPNotFound()
 
         return web.FileResponse(call.record_path)
+
+    async def _get_access_token(self) -> str:
+        access = await super(CallRecordsView, self)._get_access_token()
+
+        return access or self.request.query.get('token', '')
