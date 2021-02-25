@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from typing import List
 
 from tortoise.query_utils import Q
@@ -8,6 +9,12 @@ from app.models import Call
 from app.utils import get_logger
 
 logger = get_logger('CallsQueries', 'INFO')
+
+
+def _get_dt(dt):
+    if isinstance(dt, date):
+        return datetime(dt.year, dt.month, dt.day)
+    return dt
 
 
 class CallsQueries:
@@ -25,11 +32,14 @@ class CallsQueries:
         if not request_model.need_recall and request_model.state:
             query = query.filter(state=request_model.state)
 
-        if request_model.started_from:
-            query = query.filter(created_at__gte=request_model.started_from)
+        started_from = _get_dt(request_model.started_from)
+        started_to = _get_dt(request_model.started_to)
 
-        if request_model.started_to:
-            query = query.filter(created_at__lte=request_model.started_to)
+        if started_from:
+            query = query.filter(created_at__gte=started_from)
+
+        if started_to:
+            query = query.filter(created_at__lte=started_to)
 
         if request_model.call_type:
             query = query.filter(call_type=request_model.call_type)

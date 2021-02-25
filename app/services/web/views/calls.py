@@ -24,6 +24,7 @@ class CallsView(BaseClientAuthView):
         - $ref: '#/components/parameters/RequestGetCalls_call_type'
         - $ref: '#/components/parameters/RequestGetCalls_limit'
         - $ref: '#/components/parameters/RequestGetCalls_offset'
+        - $ref: '#/components/parameters/RequestGetCalls_number'
       responses:
         '200':
           description: ok
