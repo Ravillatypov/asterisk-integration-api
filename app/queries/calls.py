@@ -1,5 +1,7 @@
 from typing import List
 
+from tortoise.query_utils import Q
+
 from app.api.request import RequestGetCalls
 from app.consts import CallType, CallState
 from app.models import Call
@@ -23,13 +25,31 @@ class CallsQueries:
         if not request_model.need_recall and request_model.state:
             query = query.filter(state=request_model.state)
 
-        query = query.filter(created_at__gte=request_model.started_from)
+        if request_model.started_from:
+            query = query.filter(created_at__gte=request_model.started_from)
 
         if request_model.started_to:
             query = query.filter(created_at__lte=request_model.started_to)
 
         if request_model.call_type:
             query = query.filter(call_type=request_model.call_type)
+
+        if request_model.number and len(request_model.number) > 4:
+            query = query.filter(
+                Q(
+                    from_number=request_model.number,
+                    request_number=request_model.number,
+                    join_type='OR'
+                )
+            )
+        elif request_model.number:
+            query = query.filter(
+                Q(
+                    from_pin=request_model.number,
+                    request_pin=request_model.number,
+                    join_type='OR'
+                )
+            )
 
         logger.info(f'request model: {request_model}', request_model=request_model.dict())
 
