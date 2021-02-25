@@ -227,6 +227,7 @@ class BaseClientAuthView(BaseView):
 
     def _check_permission(self, perm: Permissions):
         if app_config.jwt.enabled and perm not in self.permissions:
+            self.logger.warning('has not required permissions', permissions=self.permissions, permission=perm)
             raise web.HTTPForbidden()
 
     async def _get_access_token(self) -> str:

@@ -61,7 +61,19 @@ class CallRecordsView(BaseClientAuthView):
         if not call or not call.record_path:
             return web.HTTPNotFound()
 
-        return web.FileResponse(call.record_path)
+        a_number = call.from_pin or call.from_number
+        b_number = f'-{call.request_number}' if call.request_number else ''
+        internal_number = f'-{call.request_pin}' if call.request_pin else ''
+
+        file_name = f'{call.created_at.date()}-{a_number}{b_number}{internal_number}'
+
+        return web.FileResponse(
+            call.record_path,
+            headers={
+                'Content-Type': 'application/octet-stream',
+                'Content-Disposition': f'attachment; filename="{file_name}.mp3"'
+            }
+        )
 
     async def _get_access_token(self) -> str:
         access = await super(CallRecordsView, self)._get_access_token()

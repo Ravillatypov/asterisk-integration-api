@@ -58,10 +58,10 @@ async def get_mp3_file_duration(path: str) -> int:
     if not path:
         return 0
 
-    async with async_open(path, 'rb') as afp:
-        data = await afp.read()
-
     try:
+        async with async_open(path, 'rb') as afp:
+            data = await afp.read()
+
         return MPEGInfo(BytesIO(data)).length
     except Exception as err:
         logger.warning(f'Error on read mp3 file: {err}')

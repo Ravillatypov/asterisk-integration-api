@@ -15,7 +15,7 @@ class ConvertService(PeriodicService):
     __required__ = ()
 
     async def callback(self):
-        query = Call.all().annotate(
+        query = Call.all().order_by('-created_at').annotate(
             records_count=Count('records')
         ).prefetch_related('records').filter(
             state=CallState.END,
