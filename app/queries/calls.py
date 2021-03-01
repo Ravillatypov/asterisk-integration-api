@@ -35,37 +35,33 @@ class CallsQueries:
         started_from = _get_dt(request_model.started_from)
         started_to = _get_dt(request_model.started_to)
 
+        if started_from and started_to and started_from > started_to:
+            started_to, started_from = started_from, started_to
+
         if started_from:
             query = query.filter(created_at__gte=started_from)
 
         if started_to:
+            started_to = started_to.replace(hour=23, minute=59, second=59)
             query = query.filter(created_at__lte=started_to)
 
         if request_model.call_type:
             query = query.filter(call_type=request_model.call_type)
 
-        if request_model.number and len(request_model.number) > 4:
-            query = query.filter(
-                Q(
-                    from_number=request_model.number,
-                    request_number=request_model.number,
-                    join_type='OR'
-                )
-            )
-        elif request_model.number:
-            query = query.filter(
-                Q(
-                    from_pin=request_model.number,
-                    request_pin=request_model.number,
-                    join_type='OR'
-                )
-            )
+        number = request_model.number or ''
+        num_len = len(number)
+
+        if num_len > 4:
+            number = number[1:]
+            query = query.filter(Q(from_number__endswith=number, request_number__endswith=number, join_type='OR'))
+        elif number:
+            query = query.filter(Q(from_pin=number, request_pin=number, join_type='OR'))
 
         logger.info(f'request model: {request_model}', request_model=request_model.dict())
 
         calls = await query
 
-        logger.info(f'{query.sql()}')
+        logger.info(f'{query.sql()}', started_from=started_from, started_to=started_to)
 
         if request_model.need_recall:
             return CallsQueries.need_recalls(calls)
@@ -80,6 +76,7 @@ class CallsQueries:
         for call in calls:
             if call.call_type not in (CallType.INCOMING, CallType.OUTBOUND):
                 continue
+
             if call.from_number in processed_numbers or call.request_number in processed_numbers:
                 continue
 
