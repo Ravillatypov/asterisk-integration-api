@@ -2,10 +2,20 @@ from tortoise import Tortoise
 
 from app.config import app_config
 
+TORTOISE_ORM = {
+    'connections': {'default': app_config.db_url},
+    'apps': {
+        'models': {
+            'models': ['app.models', 'aerich.models'],
+            'default_connection': 'default',
+        },
+    },
+}
+
 
 async def init_db(*args, **kwargs):
-    await Tortoise.init(modules={'models': ['app.models']}, db_url=app_config.db_url)
-    await Tortoise.generate_schemas()
+    await Tortoise.init(TORTOISE_ORM)
+    # await Tortoise.generate_schemas()
 
 
 async def close_db(*args, **kwargs):
