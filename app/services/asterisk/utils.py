@@ -61,6 +61,10 @@ def get_number(number: str) -> str:
         return app_config.ats.phone_map[number]
 
     number = ''.join((i for i in number if i.isdigit()))
+
+    if len(number) >= 10:
+        return '7' + number[-10:]
+
     return number
 
 
