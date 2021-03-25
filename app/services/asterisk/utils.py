@@ -62,8 +62,11 @@ def get_number(number: str) -> str:
 
     number = ''.join((i for i in number if i.isdigit()))
 
-    if len(number) >= 10:
-        return '7' + number[-10:]
+    if len(number) > 10 and number[0] != '7':
+        return '7' + number[1:]
+
+    elif len(number) == 10:
+        return '7' + number
 
     return number
 
