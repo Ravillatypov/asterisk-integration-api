@@ -70,7 +70,10 @@ class WSInterface:
 
         await post_event(data)
         for ws in cls.ws_clients:
-            await ws.send_str(json_event)
+            try:
+                await ws.send_str(json_event)
+            except Exception:
+                pass
 
 
 pre_events = defaultdict(str)
