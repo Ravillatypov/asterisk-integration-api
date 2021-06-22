@@ -95,15 +95,24 @@ async def hangup(manager: Manager, message: Message):
     if not call:
         return
 
+    caller_name = message.get('CallerIDName', '')
+    caller_num = message.get('CallerIDNum', '')
+
+    if caller_name != '<unknown>' and caller_num and caller_num in (call.from_pin, call.request_pin):
+        call.user = caller_name
+
     if call.state == CallState.CONNECTED:
         call.state = CallState.END
+
     elif call.call_type == CallType.INCOMING:
         call.state = CallState.MISSED
+
     else:
         call.state = CallState.NOT_CONNECTED
 
     call.finished_at = datetime.now()
     call.account_id = call.account_id or message.get('AccountCode')
+
     await call.save()
 
     calls.pop(call.id)

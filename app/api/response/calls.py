@@ -25,6 +25,7 @@ class ResponseCall(BaseModel):
     waiting_time: str = None
     duration: int = None
     comment: str = None
+    user: str = None
     tags: List[ResponseTag] = []
 
     class Config:

@@ -26,6 +26,7 @@ class WebService(AIOHTTPService):
                     'in': 'header',
                 }
             },
+            api_version='1.1.0',
         )
 
         self._set_parameters(app, parameters)
