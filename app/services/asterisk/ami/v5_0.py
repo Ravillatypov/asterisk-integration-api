@@ -6,7 +6,7 @@ from panoramisk.message import Message
 
 from app.consts import CallType, CallState
 from app.models import Call, CallRecord, Channel
-from app.services.asterisk.utils import get_number, is_internal, is_external, is_group_numbers
+from app.services.asterisk.utils import get_number, is_internal, is_external, is_group_numbers, get_company_id
 from app.utils import get_full_path
 
 
@@ -78,6 +78,7 @@ async def new_channel(manager: Manager, message: Message):
         call_type=call_type,
         state=CallState.NEW,
         created_at=datetime.utcnow(),
+        comany_id=get_company_id(from_pin, from_num, request_pin, request_num),
     )
 
 
@@ -106,6 +107,8 @@ async def hangup(manager: Manager, message: Message):
 
     else:
         call.state = CallState.NOT_CONNECTED
+
+    call.company_id = get_company_id(call.from_pin, call.from_number, call.request_pin, call.request_number)
 
     await call.save()
 

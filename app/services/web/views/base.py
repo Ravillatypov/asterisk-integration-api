@@ -34,6 +34,7 @@ class BaseView(web.View, CorsViewMixin):
         self.uid: int = None
         self.permissions: List[Permissions] = []
         self.logger = get_logger('views', 'INFO')
+        self.company_id: int = 0
 
         super().__init__(request)
 
@@ -121,10 +122,12 @@ class BaseView(web.View, CorsViewMixin):
             permissions: List[int] = None,
             response_cls: Type[BaseModel] = ResponseRefreshAccessToken,
     ):
+        company_id = 0
 
         if user:
             uid = user.id
             permissions = user.permissions
+            company_id = user.company_id
 
         if not permissions:
             raise web.HTTPBadRequest
@@ -137,6 +140,7 @@ class BaseView(web.View, CorsViewMixin):
             {
                 'uid': uid,
                 'permissions': permissions,
+                'company_id': company_id,
                 'exp': int(access_expire.timestamp()),
                 'type': 'access',
             },
@@ -222,6 +226,7 @@ class BaseClientAuthView(BaseView):
 
             self.uid = payload.get('uid')
             self.permissions = Permissions.get_permissions(payload.get('permissions', []))
+            self.company_id = payload.get('company_id', 0)
         except Exception:
             raise web.HTTPUnauthorized()
 

@@ -3,3 +3,4 @@ from tortoise import Tortoise
 from app.models import *
 from app.consts import *
 from app.config import app_config
+from app.queries import *

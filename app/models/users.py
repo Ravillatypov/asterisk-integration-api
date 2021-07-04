@@ -14,6 +14,7 @@ class User(TimestampModel):
     first_name: str = fields.CharField(max_length=30, default='')
     last_name: str = fields.CharField(max_length=30, default='')
     pass_hash: str = fields.CharField(max_length=255, default='')
+    company_id: int = fields.SmallIntField(null=True)
     permissions: List[int] = fields.JSONField(default=[Permissions.calls_view.value,
                                                        Permissions.tags_view.value,
                                                        Permissions.users_view.value])

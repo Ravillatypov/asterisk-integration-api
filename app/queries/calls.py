@@ -20,8 +20,8 @@ def _get_dt(dt):
 class CallsQueries:
 
     @staticmethod
-    async def get_calls(request_model: RequestGetCalls) -> List[Call]:
-        query = Call.all().prefetch_related('tags').order_by('-created_at')
+    async def get_calls(request_model: RequestGetCalls, company_id: int) -> List[Call]:
+        query = Call.all().prefetch_related('tags').order_by('-created_at').filter(company_id=company_id)
 
         if request_model.offset:
             query = query.offset(request_model.offset)

@@ -1,3 +1,4 @@
+import re
 from typing import List, Dict, Tuple
 
 from pydantic import BaseSettings, Field
@@ -62,6 +63,24 @@ class JWTConfig(BaseConfig):
     enabled: bool = Field(True, env='JWT_ENABLED')
 
 
+class CompanyConfig(BaseConfig):
+    enabled: bool = Field(False, env='COMPANY_ENABLED')
+    pin_maps: Dict[str, int] = Field({}, env='COMPANY_PIN_MAPS')
+    num_maps: Dict[str, int] = Field({}, env='COMPANY_NUM_MAPS')
+
+    def init(self):
+        self.pin_maps = {re.compile(k.lower().replace('x', r'\d')): v for k, v in self.pin_maps.items()}
+        self.num_maps = {re.compile(k.lower().replace('x', r'\d')): v for k, v in self.num_maps.items()}
+
+    @property
+    def pin_re_maps(self) -> List[Tuple[re.Pattern, int]]:
+        return self.pin_maps.items()  # type: ignore
+
+    @property
+    def num_re_maps(self) -> List[Tuple[re.Pattern, int]]:
+        return self.num_maps.items()  # type: ignore
+
+
 class AppConfig(BaseConfig):
     env: str = Field('local', env='ENVIRONMENT')
     sentry_dsn: str = Field('', env='SENTRY_DSN')
@@ -77,6 +96,7 @@ class AppConfig(BaseConfig):
     events: EventsConfig = Field(None)
     ats: ATSConfig = Field(None)
     jwt: JWTConfig = Field(None)
+    company: CompanyConfig = Field(None)
 
     @property
     def is_test(self) -> bool:
@@ -97,3 +117,5 @@ app_config.record = RecordConfig()
 app_config.events = EventsConfig()
 app_config.ats = ATSConfig()
 app_config.jwt = JWTConfig()
+app_config.company = CompanyConfig()
+app_config.company.init()

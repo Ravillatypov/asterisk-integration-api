@@ -24,6 +24,7 @@ class Call(TimestampModel):
     external_id: str = fields.CharField(max_length=70, index=True, null=True)
     comment: str = fields.CharField(max_length=512, default='')
     user: str = fields.CharField(max_length=128, default='')
+    company_id: int = fields.SmallIntField(index=True, default=0)
     record_path: str = fields.CharField(max_length=255, null=True)
     tags: fields.ManyToManyRelation[Tag] = fields.ManyToManyField(
         'models.Tag', related_name='calls', through='call_tags'

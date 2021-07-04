@@ -95,6 +95,9 @@ class UsersView(BaseClientAuthView):
         if request_model.password:
             kwargs['pass_hash'] = User.get_pass_hash(request_model.password)
 
+        if request_model.company_id is not None:
+            kwargs['company_id'] = request_model.company_id
+
         await User.all().filter(id=request_model.id).update(
             is_active=request_model.is_active,
             permissions=request_model.permissions,

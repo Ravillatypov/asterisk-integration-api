@@ -106,3 +106,23 @@ async def find_call_record(call: Call) -> Optional[CallRecord]:
         Q(call=None, channel__call=call) |
         Q(call=None, channel__bridged__call=call)
     ).first()
+
+
+def get_company_id(from_pin: str, from_num: str, request_pin: str, request_num: str) -> int:
+    if not app_config.company.enabled:
+        return 0
+
+    for num, regexp_maps in (
+            (from_pin, app_config.company.pin_re_maps),
+            (from_num, app_config.company.num_re_maps),
+            (request_num, app_config.company.num_re_maps),
+            (request_pin, app_config.company.pin_re_maps),
+    ):
+        if not num:
+            continue
+
+        for k, v in regexp_maps:
+            if k.fullmatch(num):
+                return v
+
+    return 0

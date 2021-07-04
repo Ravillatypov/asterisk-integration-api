@@ -57,7 +57,7 @@ class CallsView(BaseClientAuthView):
         self._check_permission(Permissions.calls_view)
 
         request_model = RequestGetCalls(**self.request.query)
-        calls = await CallsQueries.get_calls(request_model)
+        calls = await CallsQueries.get_calls(request_model, self.company_id)
 
         return ResponseCallsList(calls)
 

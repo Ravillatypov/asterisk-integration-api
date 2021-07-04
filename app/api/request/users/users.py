@@ -8,6 +8,7 @@ class RequestUser(BaseModel):
     is_active: bool
     permissions: List[int]
     password: str = Field(None, min_length=4)
+    company_id: int = None
 
 
 class RequestUpdateUser(BaseModel):

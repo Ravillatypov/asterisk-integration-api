@@ -56,7 +56,7 @@ class CallRecordsView(BaseClientAuthView):
         self._check_permission(Permissions.records_view)
 
         call_id = self.request.query.get('call_id', '')
-        call = await Call.filter(id=call_id).first()
+        call = await Call.filter(id=call_id, company_id=self.company_id).first()
 
         if not call or not call.record_path:
             return web.HTTPNotFound()

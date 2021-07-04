@@ -8,9 +8,9 @@ from .websocket import WSReaderService, WSWriterService, CommandService
 from ..config import app_config
 
 services = (
-    WSReaderService(),
-    WSWriterService(),
-    CommandService(),
+    # WSReaderService(),
+    # WSWriterService(),
+    # CommandService(),
     WebService('0.0.0.0', app_config.web_port),
 )
 
