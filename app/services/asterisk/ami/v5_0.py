@@ -78,7 +78,7 @@ async def new_channel(manager: Manager, message: Message):
         call_type=call_type,
         state=CallState.NEW,
         created_at=datetime.utcnow(),
-        comany_id=get_company_id(from_pin, from_num, request_pin, request_num),
+        company_id=get_company_id(from_pin, from_num, request_pin, request_num),
     )
 
 

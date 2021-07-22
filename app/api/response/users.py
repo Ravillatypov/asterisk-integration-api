@@ -10,7 +10,7 @@ class ResponseUser(BaseModel):
     permissions: List[int]
     username: str
     is_active: bool
-    company_id: int
+    company_id: int = None
 
     class Config:
         orm_mode = True
